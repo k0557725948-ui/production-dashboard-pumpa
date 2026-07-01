@@ -2674,7 +2674,8 @@ async function insertReturnToDb(rec){
     returned_by: rec.returnedBy, reason: rec.reason, comment: rec.comment,
     returned_at_text: rec.returnedAt,
   });
-  if(error) console.warn('insertReturnToDb error', error);
+  if(error){ console.warn('insertReturnToDb error', error); return false; }
+  return true;
 }
 async function markReturnResolvedInDb(dbId){
   const { error } = await sb.from('returns')
@@ -2712,7 +2713,11 @@ async function confirmReturn(){
     returnedBy: currentUser ? currentUser.name : 'Сотрудник',
     reason, comment, returnedAt: nowTime(),
   };
-  await insertReturnToDb(returnRecord);
+  const ok = await insertReturnToDb(returnRecord);
+  if(!ok){
+    alert('Ошибка возврата: не удалось сохранить запись в базе. Подзаказ остался у вас в работе, попробуйте ещё раз.');
+    return;
+  }
 
   // Убираем подзаказ из работы сотрудника и удаляем из общей таблицы orders
   myWork.splice(idx,1);
