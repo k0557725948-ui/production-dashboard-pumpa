@@ -1,0 +1,3399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Производство — дашборд сотрудника</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Bitrix24 palette — light */
+    --bg: #eef2f4;
+    --surface: #ffffff;
+    --surface2: #f5f7f9;
+    --border: #e2e6ea;
+    --border2: #d3dae0;
+    --text: #1a2733;
+    --text2: #7a8694;
+    --text3: #a8b2bc;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+
+    --b24-blue:    #1b6fb8;
+    --b24-blue-lt: #e8f3fc;
+    --b24-blue-mid:#2fc6f6;
+    --b24-blue-deep:#0d5a9e;
+
+    --blue:    #1b6fb8; --blue-bg:  #e8f3fc; --blue-mid: #2fc6f6;
+    --green:   #2c6e1f; --green-bg: #eaf6e3; --green-mid: #65c16f;
+    --amber:   #9a6400; --amber-bg: #fdf3df; --amber-mid: #f8c750;
+    --red:     #b3372c; --red-bg:   #fde6e4; --red-mid:   #ed6a5e;
+    --purple:  #5b4a9e; --purple-bg:#eee9fb;
+    --teal:    #0f7a6b; --teal-bg:  #e1f5f1; --teal-mid:  #43c0ac;
+    --gray:    #5a6470; --gray-bg:  #eef1f3;
+  }
+
+  /* ─── DARK THEME ─── */
+  [data-theme="dark"] {
+    --bg: #0f1923;
+    --surface: #1a2533;
+    --surface2: #212f3d;
+    --border: #2a3a4c;
+    --border2: #344a60;
+    --text: #e2e8f0;
+    --text2: #8fa3b8;
+    --text3: #4e6278;
+
+    --blue-bg:  #0e2a4a; --blue-mid: #2fc6f6;
+    --green-bg: #0a2412; --green-mid: #65c16f;
+    --amber-bg: #2a1a04; --amber-mid: #f8c750;
+    --red-bg:   #2a0e0e; --red-mid:   #ed6a5e;
+    --purple-bg:#1a1240;
+    --teal-bg:  #062018;
+    --gray-bg:  #1c2532;
+  }
+  [data-theme="dark"] .b24-strip { background: linear-gradient(90deg,#0d5a9e 0%,#1b6fb8 100%); }
+  [data-theme="dark"] .login-card { background:#1a2533;box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  [data-theme="dark"] .login-logo h1 { color:var(--text); }
+  [data-theme="dark"] .login-field input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
+  [data-theme="dark"] .login-field input::placeholder { color:var(--text3); }
+  [data-theme="dark"] .login-hint { color:var(--text3);border-color:var(--border); }
+  [data-theme="dark"] .admin-form-wrap { background:var(--surface); }
+  [data-theme="dark"] .admin-form-wrap select,
+  [data-theme="dark"] .admin-form-wrap input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
+  [data-theme="dark"] .master-row td { background:var(--surface2); }
+  [data-theme="dark"] .kanban-card { background:var(--surface); }
+  [data-theme="dark"] .bell-popup { background:var(--surface);border-color:var(--border2); }
+  [data-theme="dark"] .bell-popup-hd { background:#0f1923; }
+  [data-theme="dark"] .fixed-modal { background:var(--surface); }
+  [data-theme="dark"] .m-hd { background:var(--surface2); }
+  [data-theme="dark"] select, [data-theme="dark"] input[type=date],
+  [data-theme="dark"] input[type=text], [data-theme="dark"] input[type=number],
+  [data-theme="dark"] input[type=password] { background:var(--surface2);border-color:var(--border2);color:var(--text); }
+  [data-theme="dark"] .ctr { border-color:var(--border2) !important; }
+  [data-theme="dark"] .vs-btn.active { background:var(--surface2); }
+  [data-theme="dark"] .theme-toggle .tt-sun { display:flex; }
+  [data-theme="dark"] .theme-toggle .tt-moon { display:none; }
+
+  /* ─── THEME TOGGLE BUTTON ─── */
+  .theme-toggle { display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);font-family:inherit;transition:all .15s;white-space:nowrap; }
+  .theme-toggle:hover { border-color:var(--blue-mid);color:var(--blue); }
+  .tt-icon { font-size:14px;line-height:1; }
+  .tt-sun { display:none; }
+  .tt-moon { display:flex; }
+
+  body { font-family: -apple-system, "Helvetica Neue", Arial, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; overflow-x: hidden; }
+
+  /* Layout */
+  .app { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+  .main { padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-x: hidden; }
+
+  /* Topbar accent (Bitrix-like blue strip) */
+  .b24-strip { height: 4px; background: linear-gradient(90deg, var(--b24-blue) 0%, var(--b24-blue-mid) 100%); position: fixed; top:0; left:0; right:0; z-index: 10000; }
+
+  /* Nav tabs */
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; color: var(--text2); border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+  .nav-item:hover { background: var(--surface2); }
+  .nav-item.active { background: var(--blue-bg); color: var(--blue); font-weight: 600; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Employee card */
+  .emp-card { background: var(--surface2); border-radius: var(--radius-lg); padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .emp-av { width: 48px; height: 48px; border-radius: 50%; background: var(--b24-blue); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+  .emp-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .emp-role { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .emp-shift { font-size: 11px; color: var(--text3); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+
+  /* Counter widget */
+  .ctr { border-radius: var(--radius-lg); padding: 11px 12px; display: flex; flex-direction: column; gap: 6px; border: 1.5px solid; }
+  .ctr-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+  .ctr-label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+  .ctr-sub { font-size: 10px; opacity: .75; margin-top: 1px; }
+  .ctr-val { font-size: 20px; font-weight: 700; line-height: 1; }
+  .ctr-unit { font-size: 10px; margin-top: 1px; }
+  .bar-bg { height: 5px; border-radius: 3px; background: rgba(0,0,0,.08); overflow: hidden; }
+  .bar-fill { height: 5px; border-radius: 3px; transition: width .4s; }
+  .ctr-foot { display: flex; justify-content: space-between; align-items: center; }
+  .ctr-pct { font-size: 10px; opacity: .7; }
+  .ctr-btn { font-size: 10px; padding: 2px 8px; border-radius: 3px; border: 1px solid currentColor; opacity: .65; cursor: pointer; background: transparent; font-family: inherit; }
+  .ctr-btn:hover { opacity: 1; }
+
+  /* Section card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 2px rgba(20,40,60,.04); }
+  .card-hd { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .card-hint { font-size: 10px; color: var(--text3); }
+
+  /* Stats row */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .st { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .st-lbl { font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+  .st-val { font-size: 22px; font-weight: 700; color: var(--text); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  th { font-size: 10px; font-weight: 700; color: var(--text2); text-align: left; padding: 7px 10px; background: var(--surface2); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .3px; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.row-click:hover td { background: var(--blue-bg); cursor: pointer; }
+  .empty-row { text-align: center; padding: 20px; color: var(--text3); font-size: 12px; }
+
+  /* Badge */
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .b-blue   { background: var(--blue-bg);   color: var(--blue); }
+  .b-amber  { background: var(--amber-bg);  color: var(--amber); }
+  .b-green  { background: var(--green-bg);  color: var(--green); }
+  .b-gray   { background: var(--gray-bg);   color: var(--gray); }
+  .b-pink   { background: #fbeaf0; color: #72243e; }
+  .b-teal   { background: var(--teal-bg);   color: var(--teal); }
+  .b-purple { background: var(--purple-bg); color: var(--purple); }
+  .b-red    { background: var(--red-bg);    color: var(--red); }
+
+  /* Dots */
+  .dots { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; }
+  .dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Buttons */
+  .btn-take { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--b24-blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-take:hover { background: #d3ecfb; }
+  .btn-primary { flex: 1; padding: 9px; border-radius: var(--radius-md); border: none; background: var(--b24-blue); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-primary:hover { background: var(--b24-blue-deep); }
+  .btn-primary:disabled { opacity: .35; cursor: default; }
+  .btn-success { flex: 1; padding: 9px; border-radius: var(--radius-md); border: none; background: var(--green-mid); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-success:hover { background: #4fab59; }
+  .btn-ghost { padding: 9px 14px; border-radius: var(--radius-md); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-secondary { flex: 1; padding: 9px; border-radius: var(--radius-md); border: 1px solid var(--b24-blue); background: var(--surface); color: var(--blue); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn-secondary:hover { background: var(--blue-bg); }
+
+  /* Warn bar */
+  .warn-bar { display: none; border-radius: var(--radius-md); padding: 8px 12px; font-size: 12px; align-items: center; gap: 8px; }
+  .warn-bar.show { display: flex; }
+
+  /* Page sections */
+  .page { display: none; flex-direction: column; gap: 14px; }
+  .page.active { display: flex; }
+
+  /* Modal */
+  .m-hd { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .m-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .m-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); padding: 2px 6px; line-height: 1; border-radius: 4px; }
+  .m-close:hover { background: var(--border); }
+  .m-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .m-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+  .ig { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .ii .ik { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+  .ii .iv { font-size: 13px; font-weight: 700; color: var(--text); }
+  .mat-row { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .mat-row .mk { font-size: 10px; color: var(--text2); margin-bottom: 2px; }
+  .mat-row .mv { font-size: 13px; font-weight: 700; color: var(--text); }
+
+  /* Stages */
+  .stages { display: flex; flex-direction: column; gap: 5px; }
+  .stage-row { display: flex; align-items: center; gap: 10px; padding: 7px 11px; border-radius: var(--radius-md); border: 1px solid transparent; }
+  .stage-row.s-done   { background: var(--green-bg); border-color: #b9e2ab; }
+  .stage-row.s-active { background: var(--blue-bg);  border-color: #a9d9f7; }
+  .stage-row.s-future { background: var(--surface2); border-color: var(--border); }
+  .stage-num { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .stage-name { font-size: 12px; flex: 1; }
+  .stage-row.s-done   .stage-name { color: var(--green); }
+  .stage-row.s-active .stage-name { color: var(--blue); font-weight: 700; }
+  .stage-row.s-future .stage-name { color: var(--text3); }
+
+  /* History */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .filters select, .filters input[type=date] { font-size: 12px; height: 30px; padding: 0 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-family: inherit; }
+  .filters select:focus, .filters input:focus { outline: none; border-color: var(--b24-blue); }
+  .f-lbl { font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .f-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+  .btn-reset { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit; }
+  .btn-reset:hover { background: var(--surface2); }
+  .summary-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .sc { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .sc .sl { font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+  .sc .sv { font-size: 20px; font-weight: 700; color: var(--text); }
+  .sc .ss { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .mat-bars { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+  .mb-title { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+  .mb-row { display: flex; align-items: center; gap: 10px; }
+  .mb-name { font-size: 11px; color: var(--text2); width: 150px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mb-bar-bg { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .mb-bar-fill { height: 8px; border-radius: 4px; transition: width .4s; }
+  .mb-val { font-size: 11px; font-weight: 700; min-width: 64px; text-align: right; }
+
+  /* Refill modal */
+  .m-info { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .m-info strong { color: var(--text); }
+  .btn-ok { flex: 1; padding: 9px; border-radius: var(--radius-md); border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .refill-input-row { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .refill-input-row label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .refill-input-row input { flex: 1; font-size: 15px; font-weight: 700; height: 36px; padding: 0 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-family: inherit; text-align: right; }
+  .refill-input-row input:focus { outline: none; border-color: var(--b24-blue); }
+  .refill-input-row .r-unit { font-size: 12px; color: var(--text2); white-space: nowrap; min-width: 24px; }
+  .refill-result { font-size: 12px; color: var(--text2); display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; }
+  .refill-result span { font-weight: 700; color: var(--text); }
+
+  /* Stage advance button in table */
+  .btn-adv { font-size: 11px; padding: 4px 9px; border-radius: var(--radius-sm); border: 1px solid var(--b24-blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-adv:hover { background: #d3ecfb; }
+  .btn-adv.finish { border-color: var(--green-mid); background: var(--green-bg); color: var(--green); }
+  .btn-adv.finish:hover { background: #d8f0d4; }
+  .btn-deleg { font-size: 11px; padding: 4px 9px; border-radius: var(--radius-sm); border: 1px solid var(--purple); background: var(--purple-bg); color: var(--purple); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-deleg:hover { background: #e0d9fb; }
+
+  /* Order id grouping */
+  .order-master { font-size: 11px; font-weight: 700; color: var(--text); }
+  .order-sub { font-size: 10px; color: var(--text2); }
+
+  /* Status badges */
+  .b-urgent { background: var(--red-bg); color: var(--red); }
+  .b-deadline { background: var(--amber-bg); color: var(--amber); }
+  .b-deleg { background: var(--purple-bg); color: var(--purple); }
+
+  /* File mock */
+  .file-box { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .file-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--blue-bg); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 12px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-meta { font-size: 10px; color: var(--text2); margin-top: 1px; }
+  .btn-download { font-size: 11px; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--b24-blue); background: var(--surface); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-download:hover { background: var(--blue-bg); }
+
+  /* Comment box */
+  .comment-box { background: var(--amber-bg); border: 1px solid #f0ddb0; border-radius: var(--radius-md); padding: 10px 12px; display: flex; gap: 8px; align-items: flex-start; }
+  .comment-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .comment-text { font-size: 12px; color: #6b4d12; line-height: 1.5; }
+  .comment-label { font-size: 10px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+
+  /* Delegate select list */
+  .deleg-list { display: flex; flex-direction: column; gap: 6px; }
+  .deleg-opt { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--surface); font-family: inherit; text-align: left; width: 100%; font-size: 13px; color: var(--text); }
+  .deleg-opt:hover { background: var(--blue-bg); border-color: var(--b24-blue); }
+  .deleg-av { width: 28px; height: 28px; border-radius: 50%; background: var(--blue-bg); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .deleg-name { font-weight: 700; flex: 1; }
+  .deleg-role { font-size: 10px; color: var(--text2); }
+
+  /* ─── VIEW SWITCHER ─── */
+  .view-switcher { display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px; }
+  .vs-btn { padding:4px 9px;border:none;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s; }
+  .vs-btn.active { background:var(--surface);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .vs-btn:hover:not(.active) { color:var(--text); }
+
+  /* ─── KANBAN CARDS VIEW ─── */
+  .kanban-wrap { display:flex;flex-direction:column;gap:10px;padding:12px 14px; }
+  .kanban-master-hd { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px;display:flex;align-items:center;gap:6px; }
+  .kanban-group { margin-bottom:6px; }
+  .kanban-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px; }
+  .kanban-card { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden; }
+  .kanban-card:hover { box-shadow:0 2px 8px rgba(20,40,80,.10);border-color:var(--blue-mid); }
+  .kanban-card::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:8px 0 0 8px; }
+  .kanban-card.cat-polymer::before { background:var(--blue-mid); }
+  .kanban-card.cat-biocompat::before { background:#d45a7e; }
+  .kanban-card.cat-metal::before { background:var(--amber-mid); }
+  .kanban-card.cat-assembly::before { background:var(--green-mid); }
+  .kanban-card.cat-delegated::before { background:var(--purple); }
+  .kc-top { display:flex;align-items:flex-start;justify-content:space-between;gap:6px; }
+  .kc-id { font-size:11px;font-weight:700;color:var(--text); }
+  .kc-badges { display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end; }
+  .kc-patient { font-size:12px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .kc-type { font-size:11px;color:var(--text2); }
+  .kc-meta { display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:2px; }
+  .kc-source { font-size:10px;color:var(--text3); }
+  .kc-time { font-size:10px;color:var(--text3); }
+  .kc-progress { height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px; }
+  .kc-progress-fill { height:4px;border-radius:2px;transition:width .3s; }
+  .kc-stage { font-size:10px;font-weight:600;color:var(--blue);margin-top:2px; }
+  .kc-actions { display:flex;gap:5px;margin-top:4px; }
+  .kc-btn-take { flex:1;font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;text-align:center; }
+  .kc-btn-take:hover { background:#d3ecfb; }
+  .kc-btn-adv { flex:1;font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600; }
+  .kc-btn-adv.finish { border-color:var(--green-mid);background:var(--green-bg);color:var(--green); }
+  .kc-btn-deleg { font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--purple);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;font-weight:600; }
+
+  /* ─── MINI BADGE VIEW ─── */
+  .mini-wrap { display:flex;flex-direction:column;gap:6px;padding:10px 14px; }
+  .mini-master { margin-bottom:2px; }
+  .mini-master-hd { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:4px 0 4px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);margin-bottom:4px; }
+  .mini-sub { display:flex;align-items:center;gap:6px;padding:5px 0 5px 14px;border-bottom:1px dashed var(--border); }
+  .mini-sub:last-child { border-bottom:none;margin-bottom:4px; }
+  .mini-arrow { font-size:10px;color:var(--text3);flex-shrink:0; }
+  .mini-id { font-size:10px;color:var(--text2);min-width:60px;flex-shrink:0; }
+  .mini-patient { font-size:11px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .mini-stage { font-size:10px;color:var(--blue);font-weight:600;white-space:nowrap; }
+  .mini-btns { display:flex;gap:4px;flex-shrink:0; }
+  .mini-btn { font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
+  .mini-btn.finish { border-color:var(--green-mid);background:var(--green-bg);color:var(--green); }
+  .mini-btn.deleg { border-color:var(--purple);background:var(--purple-bg);color:var(--purple); }
+  .mini-btn.preview { border-color:var(--text3);background:var(--surface2);color:var(--text2); }
+
+  /* Order grouping styles */
+  .master-row td { background: var(--surface2); font-size:11px; font-weight:700; color:var(--text2); padding:5px 10px; border-bottom:1px solid var(--border); letter-spacing:.3px; text-transform:uppercase; }
+  .sub-row td:first-child { padding-left:24px; }
+  .sub-row td { border-bottom:1px solid var(--border); vertical-align:middle; padding:7px 10px; }
+  .sub-row:last-of-type td { border-bottom: 2px solid var(--border2); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* Fixed full-screen overlays */
+  .fixed-overlay { position: fixed; inset: 0; background: rgba(15,30,45,.45); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .fixed-overlay.open { display: flex; }
+  .fixed-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 30px rgba(20,40,60,.18); }
+
+  /* Material counters wrap (desktop: always visible) */
+  .counters-wrap { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .counters-toggle { display: none; }
+
+  /* ───────────────────────── MOBILE LAYOUT ───────────────────────── */
+  @media (max-width: 900px) {
+    body { font-size: 12px; }
+
+    .app { grid-template-columns: 1fr; }
+
+    .sidebar {
+      border-right: none;
+      border-bottom: 1px solid var(--border2);
+      padding: 10px 12px;
+      gap: 8px;
+      position: sticky;
+      top: 4px;
+      z-index: 500;
+    }
+
+    /* Employee card becomes a compact horizontal strip */
+    .emp-card { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; }
+    .emp-av { margin: 0; width: 36px; height: 36px; font-size: 13px; flex-shrink: 0; }
+    .emp-card > div:not(.emp-av) { display: flex; flex-direction: column; }
+    .emp-name { font-size: 13px; }
+    .emp-shift { margin-top: 0; padding-top: 0; border-top: none; font-size: 10px; }
+    .emp-role { font-size: 10px; }
+
+    /* Nav becomes horizontal tabs */
+    .nav { flex-direction: row; gap: 6px; }
+    .nav-item { flex: 1; justify-content: center; padding: 8px 6px; font-size: 11px; gap: 4px; white-space: nowrap; }
+    .nav-item svg { display: none; }
+
+    /* Collapsible material counters */
+    .counters-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 9px 12px; border-radius: var(--radius-md);
+      border: 1px solid var(--border2); background: var(--surface2);
+      color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer;
+      font-family: inherit;
+    }
+    .counters-wrap {
+      display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0;
+      max-height: 0; overflow: hidden;
+    }
+    .counters-wrap.open { display: grid; max-height: none; }
+    .counters-chev { transition: transform .2s; }
+    .counters-chev.open { transform: rotate(180deg); }
+
+    .ctr { padding: 8px 9px; gap: 4px; }
+    .ctr-val { font-size: 16px; }
+    .ctr-label { font-size: 9px; }
+    .ctr-sub { display: none; }
+
+    .main { padding: 10px; gap: 10px; }
+
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .st { padding: 8px 10px; }
+    .st-val { font-size: 18px; }
+
+    /* Tables: horizontal scroll wrapper */
+    .card table { display: block; overflow-x: auto; white-space: nowrap; }
+    .card table thead, .card table tbody, .card table tr { display: table; width: 100%; table-layout: fixed; }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+
+    .card-hd { padding: 8px 10px; flex-wrap: wrap; gap: 4px; }
+    .card-hint { display: none; }
+    .card-title { font-size: 12px; }
+
+    /* Modals: full width on mobile */
+    .fixed-overlay { padding: 0; align-items: flex-end; }
+    .fixed-modal { max-width: 100%; max-height: 92vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .ig { grid-template-columns: 1fr 1fr; }
+    .m-footer { flex-direction: column; }
+    .m-footer button { width: 100%; }
+
+    .filters { gap: 6px; }
+    .filters select, .filters input[type=date] { font-size: 11px; height: 28px; }
+    .f-lbl { display: none; }
+    .f-sep { display: none; }
+
+    .summary-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .mb-name { width: 90px; }
+
+    .b24-strip { height: 3px; }
+  }
+
+  @media (max-width: 480px) {
+    .counters-wrap { grid-template-columns: 1fr; }
+    .nav-item { font-size: 10px; padding: 7px 4px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+    .ig { grid-template-columns: 1fr; }
+  }
+
+  /* ─── LOGIN SCREEN ─── */
+  .login-screen { position:fixed;inset:0;background:linear-gradient(135deg,#0d4f8a 0%,#1b6fb8 50%,#2fc6f6 100%);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:0; }
+  .login-screen.hidden { display:none; }
+  .login-card { background:#fff;border-radius:12px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(10,40,80,.35); }
+  .login-logo { text-align:center;margin-bottom:28px; }
+  .login-logo-icon { width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1b6fb8,#2fc6f6);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px; }
+  .login-logo h1 { font-size:18px;font-weight:700;color:#1a2733;margin:0; }
+  .login-logo p  { font-size:12px;color:#7a8694;margin:4px 0 0; }
+  .login-field { margin-bottom:14px; }
+  .login-field label { display:block;font-size:11px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px; }
+  .login-field input { width:100%;height:40px;padding:0 12px;border:1.5px solid #d3dae0;border-radius:6px;font-size:14px;color:#1a2733;font-family:inherit;outline:none;transition:border .15s; }
+  .login-field input:focus { border-color:#1b6fb8;box-shadow:0 0 0 3px rgba(27,111,184,.12); }
+  .login-btn { width:100%;height:42px;background:#1b6fb8;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:background .15s; }
+  .login-btn:hover { background:#0d5a9e; }
+  .login-error { background:#fde6e4;border:1px solid #ed6a5e;border-radius:6px;padding:9px 12px;font-size:12px;color:#b3372c;margin-top:10px;display:none; }
+  .login-error.show { display:block; }
+  .login-hint { margin-top:20px;padding-top:16px;border-top:1px solid #eef1f3;font-size:11px;color:#a8b2bc;text-align:center;line-height:1.6; }
+  /* ─── ADMIN PANEL ─── */
+  .admin-bar { background:#1a2733;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
+  .admin-bar-title { font-size:13px;font-weight:700;color:#2fc6f6;flex:1; }
+  .admin-logout { font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:transparent;color:#a8b2bc;cursor:pointer;font-family:inherit; }
+  .admin-logout:hover { background:#2a3a4c;color:#fff; }
+  .admin-form-wrap { background:#fff;border-bottom:1px solid #d3dae0;padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end; }
+  .admin-form-wrap label { font-size:10px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px; }
+  .admin-form-wrap select, .admin-form-wrap input[type=text], .admin-form-wrap input[type=number] { height:34px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;color:#1a2733;font-family:inherit;outline:none; }
+  .admin-form-wrap select:focus, .admin-form-wrap input:focus { border-color:#1b6fb8; }
+  .admin-form-wrap .af { display:flex;flex-direction:column; }
+  .btn-post { height:34px;padding:0 16px;background:#1b6fb8;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap; }
+  .btn-post:hover { background:#0d5a9e; }
+  .admin-urgent-chk { display:flex;align-items:center;gap:6px;font-size:12px;color:#1a2733;cursor:pointer;padding-top:18px; }
+  .admin-queue-wrap { padding:14px 20px; }
+  .admin-queue-title { font-size:12px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:flex;align-items:center;gap:8px; }
+  .admin-badge-new { background:#ed6a5e;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px; }
+  /* ─── NOTIFICATION TOAST ─── */
+  .toast { position:fixed;bottom:20px;right:20px;background:#1a2733;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:99998;display:none;align-items:center;gap:10px;max-width:320px; }
+  .toast.show { display:flex; }
+  .toast-dot { width:8px;height:8px;border-radius:50%;background:#2fc6f6;flex-shrink:0;animation:pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+  /* ─── USER TOPBAR ─── */
+  .user-topbar { background:#1b6fb8;color:#fff;padding:7px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:4px;z-index:900;box-shadow:0 2px 6px rgba(0,0,0,.12); }
+  .user-topbar-name { font-size:12px;font-weight:700;flex:1; }
+  .user-topbar-role { font-size:11px;opacity:.75; }
+  .user-topbar-clock { font-size:12px;font-weight:600;opacity:.95;white-space:nowrap;display:flex;align-items:center;gap:6px;padding:0 4px;border-left:1px solid rgba(255,255,255,.25);margin-left:2px;padding-left:12px; }
+  .utc-time { font-variant-numeric:tabular-nums; }
+  .utc-date { opacity:.8;font-weight:500; }
+  .user-logout-btn { font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer;font-family:inherit; }
+  .user-logout-btn:hover { background:rgba(255,255,255,.15); }
+  /* ─── BELL NOTIFICATION ─── */
+  .bell-wrap { position:relative; display:flex; align-items:center; }
+  .bell-btn { background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;transition:background .15s; }
+  .bell-btn:hover { background:rgba(255,255,255,.15); }
+  .bell-icon { font-size:18px;line-height:1; }
+  .bell-btn.active .bell-icon { animation:bell-ring .5s ease-in-out infinite alternate; }
+  @keyframes bell-ring { 0%{transform:rotate(-15deg)} 100%{transform:rotate(15deg)} }
+  @keyframes reprint-pulse { 0%,100%{box-shadow:0 0 0 3px rgba(237,106,94,.12)} 50%{box-shadow:0 0 0 6px rgba(237,106,94,.22)} }
+  .bell-dot { position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#ed6a5e;border:1.5px solid #1b6fb8;display:none; }
+  .bell-btn.active .bell-dot { display:block; }
+  .bell-popup { position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #d3dae0;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,80,.18);width:260px;z-index:9990;display:none;flex-direction:column;overflow:hidden; }
+  .bell-popup.open { display:flex; }
+  .bell-popup-hd { background:#1a2733;padding:10px 14px;display:flex;align-items:center;gap:8px; }
+  .bell-popup-title { font-size:12px;font-weight:700;color:#fff;flex:1; }
+  .bell-popup-body { padding:12px 14px;display:flex;flex-direction:column;gap:8px; }
+  .bell-duty-name { font-size:15px;font-weight:700;color:#1a2733; }
+  .bell-duty-sub { font-size:11px;color:#7a8694;margin-top:2px; }
+  .bell-schedule { border-top:1px solid #eef1f3;padding-top:10px;margin-top:4px;display:flex;flex-direction:column;gap:4px; }
+  .bell-row { display:flex;align-items:center;gap:8px;font-size:11px; }
+  .bell-row-av { width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0; }
+  .bell-row-name { flex:1;color:#5a6470; }
+  .bell-row-day { font-size:10px;color:#a8b2bc; }
+  .bell-row.today .bell-row-name { color:#1a2733;font-weight:700; }
+  .bell-row.today .bell-row-day { color:#1b6fb8;font-weight:700; }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🦷</div>
+      <h1>Производство</h1>
+      <p>Система управления заказами</p>
+    </div>
+    <div class="login-field">
+      <label>Логин</label>
+      <input type="text" id="loginInput" placeholder="Введите логин" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Пароль</label>
+      <input type="password" id="passInput" placeholder="Введите пароль" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Войти</button>
+    <div class="login-error" id="loginError">Неверный логин или пароль</div>
+    <div class="login-hint">
+      Сотрудники: login = имя (Arsen, Alexey…)<br>
+      Администратор: login = Sergey
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- ═══════════════ ADMIN PANEL ═══════════════ -->
+<div id="adminPanel" style="display:none;flex-direction:column;min-height:100vh">
+  <div class="admin-bar">
+    <span class="admin-bar-title">⚙ Панель администратора — Сергей</span>
+    <button class="admin-tab-btn active" id="atab-orders" onclick="adminShowTab('orders')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:#2a3a4c;color:#fff;cursor:pointer;font-family:inherit">📋 Заказы</button>
+    <button class="admin-tab-btn" id="atab-users" onclick="adminShowTab('users')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:transparent;color:#a8b2bc;cursor:pointer;font-family:inherit">👥 Сотрудники</button>
+    <button onclick="adminClearTestData()" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #b3372c;background:transparent;color:#ed6a5e;cursor:pointer;font-family:inherit" title="Полностью очистить общую очередь заказов в shared storage — удаляет ВСЕ тестовые данные">🧹 Очистить тестовые данные</button>
+    <button class="admin-logout" onclick="doLogout()">Выйти</button>
+  </div>
+
+  <div id="adminTabOrders" style="display:flex;flex-direction:column">
+
+  <div class="admin-form-wrap" style="flex-direction:column;align-items:stretch;gap:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div class="af">
+        <label>№ Заказа</label>
+        <input type="text" id="aId" placeholder="1139" style="width:80px">
+      </div>
+      <div class="af">
+        <label>Пациент</label>
+        <input type="text" id="aPatient" placeholder="Иванов И.И." style="width:160px">
+      </div>
+      <div class="af">
+        <label>Источник</label>
+        <select id="aSup">
+          <option>Сетап</option>
+          <option>Моделировщик</option>
+          <option>Менеджер</option>
+          <option>ОТК (перепечатка)</option>
+        </select>
+      </div>
+      <div class="af">
+        <label>Статус заказа</label>
+        <select id="aStatus" style="width:190px">
+          <option value="normal">Текущий — до (дата)</option>
+          <option value="urgent">🔥 Срочный — высокий приоритет</option>
+          <option value="reprint">⚡ Перепечатка — наивысший приоритет</option>
+        </select>
+      </div>
+      <div class="af" id="aDeadlineWrap">
+        <label>Срок (до какой даты)</label>
+        <input type="date" id="aDeadline" style="width:140px">
+      </div>
+      <div class="af">
+        <label>Файл модели</label>
+        <input type="file" id="aFile" style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
+      </div>
+      <div class="af">
+        <label>Комментарий</label>
+        <input type="text" id="aComment" placeholder="Особые требования..." style="width:200px">
+      </div>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Изделия в заказе</label>
+      <div id="aItemsWrap" style="display:flex;flex-direction:column;gap:6px"></div>
+      <button onclick="addOrderItem()" style="margin-top:6px;font-size:11px;padding:4px 12px;border-radius:4px;border:1px dashed #7a8694;background:transparent;color:#7a8694;cursor:pointer;font-family:inherit">+ Добавить изделие</button>
+    </div>
+    <div>
+      <button class="btn-post" onclick="adminPostOrder()">✓ Разместить заказ</button>
+    </div>
+  </div>
+
+  <div class="admin-queue-wrap">
+    <div class="admin-queue-title">
+      📋 Размещённые заказы <span style="font-weight:400;color:#a8b2bc">(<span id="adminPlacedCount">0</span>)</span>
+      <span class="admin-badge-new" id="adminNewBadge" style="display:none">NEW</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+      <thead>
+        <tr style="background:#f5f7f9">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Исполнитель</th>
+          <th style="width:40px;padding:7px 10px;text-align:center;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">📎</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Время</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea"></th>
+        </tr>
+      </thead>
+      <tbody id="adminPlacedBody"></tbody>
+    </table>
+  </div>
+
+  <!-- В РАБОТЕ -->
+  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+    <div class="admin-queue-title" style="color:#1b6fb8">
+      🛠 В работе <span style="font-weight:400;color:#a8b2bc">(<span id="adminProgressCount">0</span>)</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+      <thead>
+        <tr style="background:#e8f3fc">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Исполнитель</th>
+          <th style="width:160px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Этап / Статус</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Взят</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8"></th>
+        </tr>
+      </thead>
+      <tbody id="adminProgressBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ВЫПОЛНЕННЫЕ -->
+  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+    <div class="admin-queue-title" style="color:#2c6e1f">
+      ✅ Выполненные заказы <span style="font-weight:400;color:#a8b2bc">(<span id="adminCompletedCount">0</span>)</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+      <thead>
+        <tr style="background:#eaf6e3">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Исполнитель</th>
+          <th style="width:120px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Статус</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Сдан</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0"></th>
+        </tr>
+      </thead>
+      <tbody id="adminCompletedBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ВОЗВРАТЫ ОТ ОПЕРАТОРОВ -->
+  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+    <div class="admin-queue-title" style="color:#b3372c">
+      🔁 Возвращённые заказы (не пошли в печать)
+      <span class="admin-badge-new" id="returnsNewBadge" style="display:none;background:#b3372c">NEW</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+      <thead>
+        <tr style="background:#fde6e4">
+          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">№ заказа</th>
+          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Изделие</th>
+          <th style="width:130px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Пациент</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Кем возвращён</th>
+          <th style="width:230px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Причина возврата</th>
+          <th style="width:70px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Время</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5"></th>
+        </tr>
+      </thead>
+      <tbody id="returnsBody"></tbody>
+    </table>
+  </div>
+
+  </div><!-- /adminTabOrders -->
+
+  <!-- ═══════════════ TAB: USERS MANAGEMENT ═══════════════ -->
+  <div id="adminTabUsers" style="display:none;flex-direction:column;padding:18px 20px;gap:16px">
+
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Сотрудники цеха</div>
+      <button class="btn-post" onclick="openUserModal(null)">+ Добавить сотрудника</button>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="width:130px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Логин</th>
+          <th style="width:140px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">ФИО</th>
+          <th style="width:170px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Роль</th>
+          <th style="width:140px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">График</th>
+          <th style="width:170px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Отпуск</th>
+          <th style="width:150px;padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)"></th>
+        </tr>
+      </thead>
+      <tbody id="usersBody"></tbody>
+    </table>
+  </div><!-- /adminTabUsers -->
+
+</div>
+
+<!-- CONFIRM MODAL (заменяет window.confirm — не работает в sandboxed iframe) -->
+<div class="fixed-overlay" id="confirmOverlay">
+  <div class="fixed-modal" style="max-width:380px">
+    <div class="m-hd">
+      <div class="m-title" id="confirmTitle">Подтверждение</div>
+      <button class="m-close" onclick="closeConfirm(false)">×</button>
+    </div>
+    <div class="m-body">
+      <div style="font-size:13px;color:var(--text);line-height:1.5" id="confirmText"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-primary" style="background:#b3372c" onclick="closeConfirm(true)">Подтвердить</button>
+      <button class="btn-ghost" onclick="closeConfirm(false)">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER EDIT MODAL -->
+<div class="fixed-overlay" id="userOverlay">
+  <div class="fixed-modal" style="max-width:440px">
+    <div class="m-hd">
+      <div class="m-title" id="userModalTitle">Добавить сотрудника</div>
+      <button class="m-close" onclick="closeUserModal()">×</button>
+    </div>
+    <div class="m-body">
+      <div class="login-field" style="margin:0">
+        <label>Логин (латиницей, без пробелов)</label>
+        <input type="text" id="uLogin" placeholder="Ivan">
+      </div>
+      <div class="login-field" style="margin:0">
+        <label>ФИО</label>
+        <input type="text" id="uName" placeholder="Иван Иванов">
+      </div>
+      <div class="login-field" style="margin:0">
+        <label>Роль</label>
+        <select id="uRole" style="width:100%;height:40px;padding:0 12px;border:1.5px solid var(--border2);border-radius:6px;font-size:14px;color:var(--text);font-family:inherit;background:var(--surface)">
+          <option>Оператор печати</option>
+          <option>Оператор постобработки</option>
+          <option>Администратор</option>
+        </select>
+      </div>
+      <div class="login-field" style="margin:0">
+        <label>Пароль</label>
+        <input type="text" id="uPassword" placeholder="password">
+      </div>
+      <div class="login-field" style="margin:0">
+        <label>График работы</label>
+        <input type="text" id="uSchedule" placeholder="08:00 – 20:00">
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="login-field" style="margin:0;flex:1">
+          <label>Отпуск с</label>
+          <input type="date" id="uVacFrom">
+        </div>
+        <div class="login-field" style="margin:0;flex:1">
+          <label>Отпуск по</label>
+          <input type="date" id="uVacTo">
+        </div>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-primary" onclick="saveUser()">💾 Сохранить</button>
+      <button class="btn-ghost" onclick="closeUserModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="b24-strip"></div>
+
+<div id="userTopbar" class="user-topbar" style="display:none">
+  <span class="user-topbar-name" id="utName"></span>
+  <span class="user-topbar-role" id="utRole"></span>
+  <div class="user-topbar-clock" id="utClock">
+    <span class="utc-date" id="utDate">—</span>
+    <span class="utc-time" id="utTime">—:—:—</span>
+  </div>
+  <div class="bell-wrap" id="bellWrap" style="display:none;margin-left:auto">
+    <button class="bell-btn" id="bellBtn" onclick="toggleBell(event)" aria-label="Уведомления об уборке">
+      <span class="bell-icon">🔔</span>
+      <span class="bell-dot"></span>
+    </button>
+    <div class="bell-popup" id="bellPopup">
+      <div class="bell-popup-hd">
+        <span class="bell-popup-title">🧹 Уборка сегодня</span>
+      </div>
+      <div class="bell-popup-body">
+        <div>
+          <div class="bell-duty-name" id="bellDutyName">—</div>
+          <div class="bell-duty-sub" id="bellDutySub">дежурный сегодня</div>
+        </div>
+        <div class="bell-schedule" id="bellSchedule"></div>
+      </div>
+    </div>
+  </div>
+  <button class="user-logout-btn" onclick="doLogout()">Выйти</button>
+</div>
+<div class="app" id="appShell" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="emp-card">
+      <div class="emp-av" id="empAv">АЛ</div>
+      <div class="emp-name" id="empName">—</div>
+      <div class="emp-role" id="empRole">—</div>
+      <div class="emp-shift">⏱ Смена 08:00 – 20:00</div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" onclick="showPage('work',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Рабочий стол
+      </button>
+      <button class="nav-item" onclick="showPage('history',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+        История заказов
+      </button>
+    </nav>
+
+    <!-- MATERIAL COUNTERS (collapsible on mobile) -->
+    <button class="counters-toggle" id="countersToggle" onclick="toggleCounters()">
+      <span>📦 Материалы и расходники</span>
+      <span class="counters-chev" id="countersChev">▾</span>
+    </button>
+    <div id="countersWrap" class="counters-wrap"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- WORK PAGE -->
+    <div class="page active" id="page-work">
+      <div id="warnBar" class="warn-bar"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="stats" style="flex:1;min-width:0">
+          <div class="st"><div class="st-lbl">Ожидают меня</div><div class="st-val" id="sQueue">0</div></div>
+        <div class="st"><div class="st-lbl">В работе</div><div class="st-val" id="sActive">0</div></div>
+        <div class="st"><div class="st-lbl">Готово сегодня</div><div class="st-val" id="sDone">0</div></div>
+        <div class="st"><div class="st-lbl">Расход за смену</div><div class="st-val" id="sConsume">0</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Сменить тему">
+            <span class="tt-icon tt-moon">🌙</span>
+            <span class="tt-icon tt-sun">☀️</span>
+            <span id="themeLabel">Тёмная</span>
+          </button>
+          <div class="view-switcher">
+          <button class="vs-btn active" id="vs-table" onclick="setView('table')" title="Таблица">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            Таблица
+          </button>
+          <button class="vs-btn" id="vs-kanban" onclick="setView('kanban')" title="Карточки">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>
+            Карточки
+          </button>
+          <button class="vs-btn" id="vs-mini" onclick="setView('mini')" title="Компактно">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            Компактно
+          </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- ПРИОРИТЕТНЫЙ БЛОК: ПЕРЕПЕЧАТКИ -->
+      <div class="card" id="reprintCard" style="display:none;border:2px solid #ed6a5e;box-shadow:0 0 0 3px rgba(237,106,94,.12);animation:reprint-pulse 2s ease-in-out infinite">
+        <div class="card-hd" style="background:linear-gradient(90deg,#fde6e4,#fdebd8)">
+          <div class="card-title" style="color:#791f1f">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b3372c" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><polyline points="21 3 21 8 16 8"/></svg>
+            ⚡ ПЕРЕПЕЧАТКИ — наивысший приоритет
+          </div>
+          <span class="card-hint" style="color:#b3372c;font-weight:700">требуют немедленной печати</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:90px">№ заказа</th>
+            <th style="width:96px">Изделие</th>
+            <th style="width:130px">Пациент</th>
+            <th style="width:70px">Источник</th>
+            <th style="width:46px">Кол.</th>
+            <th style="width:80px">Статус</th>
+            <th style="width:70px">Поступил</th>
+            <th style="width:68px"></th>
+          </tr></thead>
+          <tbody id="reprintBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            Очередь — свободные заказы и подзаказы
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="qFilterCat" onchange="renderWork()" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
+              <option value="">Все материалы</option>
+              <option value="polymer">Полимер</option>
+              <option value="biocompat">Биосовместимый</option>
+              <option value="metal">Металл</option>
+              <option value="assembly">Сборка</option>
+            </select>
+            <span class="card-hint">«Взять» — принять в работу</span>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:90px">№ заказа</th>
+            <th style="width:96px">Изделие</th>
+            <th style="width:130px">Пациент</th>
+            <th style="width:70px">Источник</th>
+            <th style="width:46px">Кол.</th>
+            <th style="width:80px">Статус</th>
+            <th style="width:70px">Поступил</th>
+            <th style="width:68px"></th>
+          </tr></thead>
+          <tbody id="qBody"></tbody>
+        </table>
+        <div class="kanban-wrap" id="qKanban" style="display:none"></div>
+        <div class="mini-wrap" id="qMini" style="display:none"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1b6fb8" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Мои заказы/подзаказы в работе
+          </div>
+          <span class="card-hint">нажмите на строку для деталей, или кнопку → для перехода</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:78px">№ заказа</th>
+            <th style="width:90px">Изделие</th>
+            <th style="width:108px">Пациент</th>
+            <th style="width:64px">Источник</th>
+            <th style="width:100px">Прогресс</th>
+            <th style="width:80px">Этап</th>
+            <th style="width:58px">Расход</th>
+            <th style="width:64px">Статус</th>
+            <th style="width:108px"></th>
+          </tr></thead>
+          <tbody id="wBody"></tbody>
+        </table>
+        <div class="kanban-wrap" id="wKanban" style="display:none"></div>
+        <div class="mini-wrap" id="wMini" style="display:none"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2c6e1f" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Завершено сегодня
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:78px">№ заказа</th>
+            <th style="width:84px">Изделие</th>
+            <th style="width:120px">Пациент</th>
+            <th style="width:68px">Источник</th>
+            <th style="width:80px">Расход</th>
+            <th style="width:62px">Сдан</th>
+            <th style="width:82px">Время выполн.</th>
+          </tr></thead>
+          <tbody id="dBody"></tbody>
+        </table>
+        <div class="kanban-wrap" id="dKanban" style="display:none"></div>
+        <div class="mini-wrap" id="dMini" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div class="page" id="page-history">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+            История заказов
+          </div>
+          <span class="card-hint" id="resultCount">0 записей</span>
+        </div>
+        <div class="filters">
+          <span class="f-lbl">Период:</span>
+          <input type="date" id="fFrom" onchange="applyFilters()">
+          <span class="f-lbl">—</span>
+          <input type="date" id="fTo" onchange="applyFilters()">
+          <div class="f-sep"></div>
+          <span class="f-lbl">Сотрудник:</span>
+          <select id="fEmp" onchange="applyFilters()">
+            <option value="">Все</option>
+            <option>Алексей</option><option>Николай</option><option>Арсен</option><option>Александр</option><option>Павел</option>
+          </select>
+          <div class="f-sep"></div>
+          <span class="f-lbl">Изделие:</span>
+          <select id="fType" onchange="applyFilters()">
+            <option value="">Все</option>
+            <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
+            <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
+            <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+          </select>
+          <div class="f-sep"></div>
+          <select id="fCat" onchange="applyFilters()">
+            <option value="">Все категории</option>
+            <option value="polymer">Полимер</option>
+            <option value="biocompat">Биосовместимый</option>
+            <option value="metal">Металл</option>
+          </select>
+          <button class="btn-reset" onclick="resetFilters()">✕ Сбросить</button>
+        </div>
+        <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+          <div class="summary-row" id="histSummary"></div>
+          <div class="mat-bars" id="matBars"></div>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:78px">№ заказа</th>
+            <th style="width:84px">Изделие</th>
+            <th style="width:120px">Пациент</th>
+            <th style="width:72px">Сотрудник</th>
+            <th style="width:66px">Источник</th>
+            <th style="width:42px">Кол.</th>
+            <th style="width:72px">Расход</th>
+            <th style="width:60px">Время</th>
+            <th style="width:60px">Дата</th>
+          </tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ORDER MODAL -->
+<div class="fixed-overlay" id="orderOverlay">
+  <div class="fixed-modal">
+    <div class="m-hd">
+      <div class="m-title" id="oTitle">Заказ</div>
+      <button class="m-close" onclick="closeOrder()">×</button>
+    </div>
+    <div class="m-body">
+      <div class="ig" id="oInfo"></div>
+      <div id="oStatusRow" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div id="oCommentWrap"></div>
+      <div class="mat-row" id="oMat"></div>
+      <div id="oFileWrap"></div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Этапы</div>
+        <div class="stages" id="oStages"></div>
+      </div>
+    </div>
+    <div class="m-footer" id="oFooter"></div>
+  </div>
+</div>
+
+<!-- DELEGATION PREVIEW MODAL -->
+<div class="fixed-overlay" id="delegPreviewOverlay">
+  <div class="fixed-modal" style="max-width:500px">
+    <div class="m-hd">
+      <div class="m-title">Подзаказ <span id="dpId"></span> — делегирован</div>
+      <button class="m-close" onclick="closeDelegPreview()">×</button>
+    </div>
+    <div class="m-body">
+      <div class="ig" id="dpInfo"></div>
+      <div class="comment-box" style="background:var(--purple-bg);border-color:#cfc6f3">
+        <span class="comment-icon">↪</span>
+        <div>
+          <div class="comment-label" style="color:var(--purple)">Передано от <span id="dpFrom"></span></div>
+          <div class="comment-text" style="color:#3c3170" id="dpNote"></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Что уже сделано</div>
+        <div class="stages" id="dpStages"></div>
+      </div>
+      <div class="ig" id="dpTimeInfo"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-primary" id="dpTakeBtn" onclick="takeFromPreview()">▶ Взять в работу — продолжить</button>
+      <button class="btn-ghost" onclick="closeDelegPreview()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELEGATE MODAL -->
+<div class="fixed-overlay" id="delegOverlay">
+  <div class="fixed-modal" style="max-width:380px">
+    <div class="m-hd">
+      <div class="m-title">Делегировать подзаказ <span id="delegOrderId"></span></div>
+      <button class="m-close" onclick="closeDeleg()">×</button>
+    </div>
+    <div class="m-body">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Выберите сотрудника, которому передать подзаказ:</div>
+      <div class="deleg-list" id="delegList"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-ghost" onclick="closeDeleg()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN ORDER DETAIL MODAL -->
+<div class="fixed-overlay" id="adminDetailOverlay">
+  <div class="fixed-modal" style="max-width:600px">
+    <div class="m-hd">
+      <div class="m-title" id="adminDetailTitle">Подзаказ</div>
+      <button class="m-close" onclick="closeAdminDetail()">×</button>
+    </div>
+    <div class="m-body">
+      <div class="ig" id="adminDetailInfo"></div>
+      <div id="adminDetailStatusRow" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div id="adminDetailReturnWrap"></div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Этапы и затраченное время</div>
+        <div class="stages" id="adminDetailStages"></div>
+      </div>
+      <div class="ig" id="adminDetailTotalWrap"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-ghost" onclick="closeAdminDetail()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN TO SUPPLIER MODAL -->
+<div class="fixed-overlay" id="returnOverlay">
+  <div class="fixed-modal" style="max-width:420px">
+    <div class="m-hd">
+      <div class="m-title">↩ Вернуть подзаказ <span id="returnOrderId"></span> поставщику</div>
+      <button class="m-close" onclick="closeReturnModal()">×</button>
+    </div>
+    <div class="m-body">
+      <div style="font-size:12px;color:var(--text2)">Заказ не пройдёт этап подготовки к печати и вернётся администратору с указанной причиной.</div>
+      <div class="login-field" style="margin:0">
+        <label>Причина возврата</label>
+        <select id="returnReason" style="width:100%;height:38px;padding:0 10px;border:1.5px solid var(--border2);border-radius:6px;font-size:13px;color:var(--text);font-family:inherit;background:var(--surface)">
+          <option value="Отсутствие .stl файла на печать">Отсутствие .stl файла на печать</option>
+          <option value="Неправильно подготовленный .stl">Неправильно подготовленный .stl</option>
+          <option value="Некомплект / ошибка в файлах">Некомплект / ошибка в файлах</option>
+          <option value="Ошибка заведения в систему">Ошибка заведения в систему</option>
+          <option value="Другое">Другое (указать в комментарии)</option>
+        </select>
+      </div>
+      <div class="login-field" style="margin:0">
+        <label>Комментарий (необязательно)</label>
+        <input type="text" id="returnComment" placeholder="Дополнительные детали...">
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-primary" style="background:#b3372c" onclick="confirmReturn()">↩ Подтвердить возврат</button>
+      <button class="btn-ghost" onclick="closeReturnModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY DETAIL MODAL -->
+<div class="fixed-overlay" id="histOverlay">
+  <div class="fixed-modal">
+    <div class="m-hd">
+      <div class="m-title" id="hTitle">Заказ</div>
+      <button class="m-close" onclick="closeHist()">×</button>
+    </div>
+    <div class="m-body">
+      <div class="ig" id="hInfo"></div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Этапы выполнения</div>
+        <div class="stages" id="hStages"></div>
+      </div>
+    </div>
+    <div class="m-footer"><button class="btn-ghost" onclick="closeHist()">Закрыть</button></div>
+  </div>
+</div>
+
+<!-- REFILL MODAL -->
+<div class="fixed-overlay" id="refillOverlay">
+  <div class="fixed-modal" style="max-width:400px">
+    <div class="m-hd">
+      <div class="m-title" id="rTitle">Пополнение</div>
+      <button class="m-close" onclick="closeRefill()">×</button>
+    </div>
+    <div class="m-body">
+      <div id="rInfo"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-ok" id="rOkBtn" onclick="confirmRefill()">Подтвердить</button>
+      <button class="btn-ghost" onclick="closeRefill()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ─── */
+// Маршруты для ОДНОМАТЕРИАЛЬНОГО заказа (все подзаказы одного типа материала):
+// ...→ Беглый контроль (последний этап подзаказа) — далее автоматически создаётся
+// отдельная задача "Сборка заказа" в очереди (без ожидания других подзаказов)
+const SP  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль'];
+const SB  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль'];
+const SM  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Беглый контроль'];
+const SMK = ['Подготовка к печати','Печать','Печать клипс','Пескоструйная обработка','Установка клипс','Пескоструйная обработка','Полировка','Беглый контроль'];
+
+// Маршруты для СОСТАВНОГО заказа (несколько разных материалов в одном № заказа):
+// ...→ Беглый контроль → Укомплектовка → Готов к сборке (последний этап ЭТОГО подзаказа,
+// сам подзаказ завершается, а сборка станет отдельной задачей когда готовы ВСЕ подзаказы)
+const SP_MULTI  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль','Укомплектовка','Готов к сборке'];
+const SB_MULTI  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль','Укомплектовка','Готов к сборке'];
+const SM_MULTI  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Беглый контроль','Укомплектовка','Готов к сборке'];
+const SMK_MULTI = ['Подготовка к печати','Печать','Печать клипс','Пескоструйная обработка','Установка клипс','Пескоструйная обработка','Полировка','Беглый контроль','Укомплектовка','Готов к сборке'];
+
+// Финальная задача "Сборка заказа" (создаётся автоматически для составных заказов)
+const ASSEMBLY_ROUTE = ['Сборка', 'Передача в ОТК'];
+
+function baseStagesByType(type){
+  if(type==='Брекеты вестибулярные') return SM;
+  if(type==='Брекеты самолигирующие') return SMK;
+  if(['Аппарат (кольцо)'].includes(type)) return SM;
+  if(['Элайнер биосовместимый','Шаблон биосовместимый'].includes(type)) return SB;
+  return SP;
+}
+function multiStagesByType(type){
+  if(type==='Брекеты вестибулярные') return SM_MULTI;
+  if(type==='Брекеты самолигирующие') return SMK_MULTI;
+  if(['Аппарат (кольцо)'].includes(type)) return SM_MULTI;
+  if(['Элайнер биосовместимый','Шаблон биосовместимый'].includes(type)) return SB_MULTI;
+  return SP_MULTI;
+}
+
+// Определяет состав заказа (один материал или несколько разных типов изделий)
+// по всем известным подзаказам этого masterId среди очереди/работы/завершённых
+function isMultiMaterialOrder(masterId){
+  const all = [...queue, ...myWork, ...done].filter(o=>o.masterId===masterId && !o._isAssembly);
+  const types = new Set(all.map(o=>o.type));
+  return types.size > 1;
+}
+
+// Главная функция выбора маршрута для подзаказа: учитывает тип изделия
+// и то, единственный ли это материал в заказе или заказ составной
+function stagesByType(type, masterId){
+  if(type==='Сборка заказа') return ASSEMBLY_ROUTE;
+  if(masterId && isMultiMaterialOrder(masterId)) return multiStagesByType(type);
+  return baseStagesByType(type);
+}
+
+const MAT_CFG = {
+  // Полимер
+  'Элайнер':                  {matId:'abs',      ml:30,  unit:'мл', cat:'polymer'},
+  'Модель (форма)':           {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
+  'Шаблон':                   {matId:'surgical', ml:50,  unit:'мл', cat:'polymer'},
+  'Позиционер':               {matId:'dental',   ml:50,  unit:'мл', cat:'polymer'},
+  // Биосовместимый полимер
+  'Элайнер биосовместимый':   {matId:'biocomp',  ml:30,  unit:'мл', cat:'biocompat'},
+  'Шаблон биосовместимый':    {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
+  // Металл
+  'Аппарат (кольцо)':         {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
+  'Брекеты вестибулярные':    {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
+  'Брекеты самолигирующие':   {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
+};
+
+// Категории для маршрута
+const CAT_MAP = {
+  'Элайнер':'polymer','Модель (форма)':'polymer','Шаблон':'polymer','Позиционер':'polymer',
+  'Элайнер биосовместимый':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+};
+
+const MATERIALS = [
+  { id:'alc',      label:'Спирт',             sub:'9 л / 3 дня',           icon:'⚗', total:50000, unit:'л',  current:31000, color:'#43c0ac', bcolor:'#43c0ac', tcolor:'#0f7a6b', bgcolor:'#e1f5f1', isTime:true  },
+  { id:'abs',      label:'ABS like серый',    sub:'Элайнеры, Модели',      icon:'◻', total:30000, unit:'мл', current:24500, color:'#2fc6f6', bcolor:'#1b6fb8', tcolor:'#0d5a9e', bgcolor:'#e8f3fc', isTime:false },
+  { id:'dental',   label:'Dental clear',      sub:'Позиционеры',           icon:'◻', total:30000, unit:'мл', current:19800, color:'#8f7de0', bcolor:'#5b4a9e', tcolor:'#5b4a9e', bgcolor:'#eee9fb', isTime:false },
+  { id:'surgical', label:'Surgical Guide',    sub:'Шаблоны',               icon:'◻', total:30000, unit:'мл', current:27100, color:'#43c0ac', bcolor:'#43c0ac', tcolor:'#0f7a6b', bgcolor:'#e1f5f1', isTime:false },
+  { id:'metal',    label:'Металл (порошок)',  sub:'1 кг / 15 печатей',     icon:'⬡', total:15000, unit:'г',  current:11400, color:'#f8c750', bcolor:'#9a6400', tcolor:'#9a6400', bgcolor:'#fdf3df', isTime:false },
+  { id:'gas',      label:'Газ',               sub:'1/7 балона / 1 печать', icon:'◎', total:700,   unit:'%',  current:520,   color:'#9aa3ab', bcolor:'#7a8694', tcolor:'#5a6470', bgcolor:'#eef1f3', isTime:false, isGas:true },
+  { id:'biocomp',  label:'Биосовместимый',    sub:'Элайнер/Шаблон биосовм.', icon:'◻', total:20000, unit:'мл', current:15000, color:'#d45a7e', bcolor:'#993556', tcolor:'#72243e', bgcolor:'#fbeaf0', isTime:false },
+  { id:'calib',    label:'Калибровка принтеров', sub:'каждые 2 недели, вторник 10:00', icon:'⚙', total:100, unit:'%', current:100, color:'#534ab7', bcolor:'#534ab7', tcolor:'#3c3489', bgcolor:'#eee9fb', isTime:false, isCalib:true },
+];
+
+const ALC_LAST  = Date.now() - 1.2*24*3600*1000;
+const ALC_PERIOD = 3*24*3600*1000;
+
+// Калибровка принтеров — каждый вторник в 10:00
+function nextCalibrationTs(){
+  const now = new Date();
+  const d = new Date(now);
+  // Каждые 2 недели — вторник 10:00
+  // Опорная дата: первый вторник 2026-01-06 10:00
+  const BASE_CALIB = new Date('2026-01-06T10:00:00').getTime();
+  const PERIOD = 14*24*3600*1000;
+  const nowTs = now.getTime();
+  // Находим ближайший будущий момент через кратные периоды от BASE
+  let next = BASE_CALIB;
+  while(next <= nowTs) next += PERIOD;
+  return next;
+}
+function calibStr(){
+  const rem=Math.max(0, nextCalibrationTs()-Date.now());
+  if(rem===0) return 'СЕЙЧАС';
+  const h=Math.floor(rem/3600000);
+  const d=Math.floor(h/24), hh=h%24;
+  return d>0?(d+'д '+hh+'ч'):(hh+'ч '+Math.floor((rem%3600000)/60000)+'м');
+}
+function calibPct(){
+  const PERIOD=14*24*3600*1000;
+  const rem=Math.max(0, nextCalibrationTs()-Date.now());
+  return Math.round((rem/PERIOD)*100);
+}
+/* ─── DUTY (УБОРКА) ─── */
+// Динамический список операторов печати (без учёта отпуска — базовый порядок)
+function dutyOperatorsBase(){
+  return Object.values(USERS)
+    .filter(u=>u.role==='Оператор печати')
+    .map(u=>u.name)
+    .sort(); // стабильный порядок по алфавиту, чтобы не "прыгал" при добавлении новых
+}
+
+function isOnVacation(userName, date){
+  const u = Object.values(USERS).find(x=>x.name===userName);
+  if(!u || !u.vacFrom || !u.vacTo) return false;
+  const d = date.toISOString().slice(0,10);
+  return d>=u.vacFrom && d<=u.vacTo;
+}
+
+function dutyOperatorsForDate(date){
+  return dutyOperatorsBase().filter(name=>!isOnVacation(name, date));
+}
+
+function dutyTodayName(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const ops = dutyOperatorsForDate(today);
+  if(!ops.length) return null;
+  const BASE = new Date('2026-01-05T00:00:00').getTime();
+  const dayIdx = Math.floor((today.getTime()-BASE)/(24*3600*1000));
+  const idx = ((dayIdx % ops.length) + ops.length) % ops.length;
+  return ops[idx];
+}
+
+function dutySchedule(){
+  // Расписание на ближайшие 4 дня, с учётом отпусков на каждую дату
+  const today = new Date(); today.setHours(0,0,0,0);
+  const result = [];
+  const BASE = new Date('2026-01-05T00:00:00').getTime();
+  for(let i=0;i<4;i++){
+    const d = new Date(today.getTime()+i*24*3600*1000);
+    const ops = dutyOperatorsForDate(d);
+    let name = '—';
+    if(ops.length){
+      const dayIdx = Math.floor((d.getTime()-BASE)/(24*3600*1000));
+      const idx = ((dayIdx % ops.length)+ops.length)%ops.length;
+      name = ops[idx];
+    }
+    const label = i===0?'Сегодня':i===1?'Завтра':d.toLocaleDateString('ru-RU',{weekday:'short',day:'2-digit',month:'2-digit'});
+    result.push({name, label, isToday:i===0});
+  }
+  return result;
+}
+
+function initBell(){
+  const dutyName = dutyTodayName();
+  const isMyDuty = currentUser && dutyName && currentUser.name === dutyName;
+  const isOperator = currentUser && currentUser.role==='Оператор печати';
+  if(!isOperator) return; // Сергей и не-операторы не видят колокольчик
+
+  const wrap = document.getElementById('bellWrap');
+  const btn  = document.getElementById('bellBtn');
+  wrap.style.display = 'flex';
+  if(isMyDuty) btn.classList.add('active'); else btn.classList.remove('active');
+
+  // Заполняем попап
+  document.getElementById('bellDutyName').textContent = dutyName || 'Все в отпуске';
+  document.getElementById('bellDutySub').textContent  = isMyDuty ? '👆 Сегодня убираешь ты!' : (dutyName?'дежурный сегодня':'некому убирать — все в отпуске');
+
+  const schedule = dutySchedule();
+  const palette = ['#e8f3fc/#0c447c','#eee9fb/#3c3489','#e1f5f1/#0f7a6b','#fdf3df/#9a6400','#fbeaf0/#72243e'];
+
+  document.getElementById('bellSchedule').innerHTML = schedule.map((s,i)=>{
+    const [bg,tc] = (palette[i%palette.length]).split('/');
+    const inits = s.name && s.name!=='—' ? makeInitials(s.name) : '–';
+    return `<div class="bell-row ${s.isToday?'today':''}">
+      <div class="bell-row-av" style="background:${bg};color:${tc}">${inits}</div>
+      <div class="bell-row-name">${s.name}</div>
+      <div class="bell-row-day">${s.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBell(e){
+  e.stopPropagation();
+  const popup = document.getElementById('bellPopup');
+  popup.classList.toggle('open');
+}
+
+// Закрываем попап при клике вне
+document.addEventListener('click', e=>{
+  const wrap = document.getElementById('bellWrap');
+  if(wrap && !wrap.contains(e.target)){
+    const popup = document.getElementById('bellPopup');
+    if(popup) popup.classList.remove('open');
+  }
+});
+
+function calibDone(){
+  // Сбросить счётчик — сохраняем в localStorage чтобы пережить перезагрузку
+  try{ localStorage.setItem('calib_done', String(Date.now())); } catch(e){}
+  renderCounters();
+  showToast('✅ Калибровка отмечена — следующая через 14 дней');
+}
+
+const EMPLOYEES = ['Алексей','Николай','Арсен','Александр','Павел'];
+const CURRENT_USER = 'Алексей';
+
+function initials(name){
+  const map = {'Алексей':'АЛ','Николай':'НК','Арсен':'АР','Александр':'АС','Павел':'ПВ'};
+  return map[name] || name.slice(0,2).toUpperCase();
+}
+function roleOf(name){
+  const map = {'Алексей':'Оператор печати','Николай':'Оператор печати','Арсен':'Оператор печати','Александр':'Оператор постобработки','Павел':'Оператор печати'};
+  return map[name] || 'Сотрудник';
+}
+
+/* Each subOrder belongs to a master order number (masterId).
+   id = unique subOrder id, masterId = shared order number, partLabel = "Металл" / "Полимер" etc. */
+let queue = [];
+let myWork = [];
+let done = [];
+const ARCHIVE = [];
+let RETURNS = []; // заказы, возвращённые поставщику (видны у Сергея)
+
+let openOrderId = null;
+let delegTargetId = null;
+let refillTarget = null;
+
+/* ─── HELPERS ─── */
+function st(o){return stagesByType(o.type, o.masterId);}
+function consume(o){const c=MAT_CFG[o.type];return c?c.ml*o.qty+' '+c.unit:'–';}
+function consumeNum(o){const c=MAT_CFG[o.type];return c?c.ml*o.qty:0;}
+function scol(i,cur){return i<cur?'#65c16f':i===cur?'#2fc6f6':'#dbe2e8';}
+function dotRow(o){return '<div class="dots">'+st(o).map((_,i)=>`<div class="dot" style="background:${scol(i,o.stage)}"></div>`).join('')+'</div>';}
+function stageBadge(o){
+  const s=st(o),nm=s[o.stage]||'–';
+  const cls=o.stage<=1?'b-blue':o.stage>=s.length-2?'b-purple':'b-teal';
+  return `<span class="badge ${cls}">${nm}</span>`;
+}
+function nowTime(){return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+function fmtDate(d){return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function fmtTime(d){return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+function fmtDeadline(iso){
+  if(!iso) return null;
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+}
+function isoDate(d){return d.toISOString().slice(0,10);}
+function statusBadges(o){
+  let html='';
+  if(o.isReprint) html+='<span class="badge" style="background:#ed6a5e;color:#fff">⚡ Перепечатка</span>';
+  if(o.urgent) html+='<span class="badge b-urgent">🔥 Срочно</span>';
+  if(o.deadline) html+=`<span class="badge b-deadline">⏳ до ${fmtDeadline(o.deadline)}</span>`;
+  if(o.delegatedFrom) html+=`<span class="badge b-deleg" title="Делегирован от ${o.delegatedFrom}">↪ Делегирован</span>`;
+  return html;
+}
+function statusBadgesCompact(o){
+  let html='';
+  if(o.isReprint) html+='<span class="badge" style="background:#ed6a5e;color:#fff">Перепечатка</span>';
+  if(o.urgent) html+='<span class="badge b-urgent">Срочно</span>';
+  if(o.deadline) html+=`<span class="badge b-deadline">до ${fmtDeadline(o.deadline)}</span>`;
+  if(o.delegatedFrom) html+=`<span class="badge b-deleg" title="Делегирован от ${o.delegatedFrom}">Делегирован</span>`;
+  if(!html) html='<span style="color:var(--text3);font-size:10px">—</span>';
+  return html;
+}
+
+/* ─── COUNTERS ─── */
+function alcPct(){return Math.max(0,Math.min(100,Math.round(((ALC_PERIOD-(Date.now()-ALC_LAST))/ALC_PERIOD)*100)));}
+function alcStr(){const rem=Math.max(0,ALC_PERIOD-(Date.now()-ALC_LAST));const h=Math.floor(rem/3600000);return Math.floor(h/24)+'д '+h%24+'ч';}
+function matPct(mat){return Math.max(0,Math.min(100,Math.round(mat.current/mat.total*100)));}
+function barCol(p,base){return p>40?base:p>15?'#f8c750':'#ed6a5e';}
+function brdCol(p,base){return p>40?base:p>15?'#9a6400':'#ed6a5e';}
+
+function renderCounters(){
+  const warns=[];
+  let html='';
+  MATERIALS.forEach(mat=>{
+    const p=mat.id==='alc'?alcPct():mat.isCalib?calibPct():matPct(mat);
+    const bc=brdCol(p,mat.bcolor), fc=barCol(p,mat.color);
+    const tc=p<=15?'#b3372c':p<=40?'#9a6400':mat.tcolor;
+    const bg=p<=15?'#fde6e4':p<=40?'#fdf3df':mat.bgcolor;
+    let valStr, unitStr;
+    if(mat.id==='alc'){valStr=alcStr();unitStr='до замены';}
+    else if(mat.isCalib){valStr=calibStr();unitStr='до калибровки';}
+    else if(mat.isGas){valStr=(mat.current/100).toFixed(1);unitStr='бал.';}
+    else if(mat.unit==='г'&&mat.current>=1000){valStr=(mat.current/1000).toFixed(2);unitStr='кг';}
+    else if(mat.unit==='мл'&&mat.current>=1000){valStr=(mat.current/1000).toFixed(1);unitStr='л';}
+    else{valStr=Math.round(mat.current);unitStr=mat.unit;}
+    if(mat.isCalib){
+      const rem=nextCalibrationTs()-Date.now();
+      if(rem<=0) warns.push('Калибровка принтеров: СЕЙЧАС!');
+      else if(rem<24*3600*1000) warns.push('Калибровка принтеров: сегодня в 10:00');
+    } else if(p<=15) warns.push(mat.label+': критично!');
+    else if(p<=40) warns.push(mat.label+': заканчивается');
+    html+=`<div class="ctr" style="border-color:${bc};background:${bg}">
+      <div class="ctr-head">
+        <div>
+          <div class="ctr-label" style="color:${tc}">${mat.label}</div>
+          <div class="ctr-sub" style="color:${tc}">${mat.sub}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="ctr-val" style="color:${tc}">${valStr}</div>
+          <div class="ctr-unit" style="color:${tc}">${unitStr}</div>
+        </div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${fc}"></div></div>
+      <div class="ctr-foot">
+        <div class="ctr-pct" style="color:${tc}">${mat.isCalib?calibStr():mat.isGas?((mat.current/100).toFixed(1)+" / "+(mat.total/100)+" б"):p+"%"}</div>
+        ${mat.isCalib
+          ? `<button class="ctr-btn" style="color:${tc};border-color:${bc}" onclick="calibDone()">✓ Выполнено</button>`
+          : `<button class="ctr-btn" style="color:${tc};border-color:${bc}" onclick="openRefill('${mat.id}')">+ Пополнить</button>`
+        }
+      </div>
+    </div>`;
+  });
+  document.getElementById('countersWrap').innerHTML=html;
+  const wb=document.getElementById('warnBar');
+  const crits=warns.filter(w=>w.includes('критич'));
+  if(crits.length){wb.innerHTML='⚠ '+crits.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:#fde6e4;border:1px solid #ed6a5e;color:#b3372c;';}
+  else if(warns.length){wb.innerHTML='⚠ '+warns.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:#fdf3df;border:1px solid #f8c750;color:#9a6400;';}
+  else{wb.className='warn-bar';}
+}
+
+/* ─── VIEW MODE ─── */
+let currentView = localStorage.getItem('viewMode')||'table';
+
+/* ─── THEME ─── */
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const label = document.getElementById('themeLabel');
+  if(label) label.textContent = theme==='dark' ? 'Светлая' : 'Тёмная';
+  try{ localStorage.setItem('theme', theme); } catch(e){}
+}
+function toggleTheme(){
+  const curr = document.documentElement.getAttribute('data-theme')||'light';
+  applyTheme(curr==='dark' ? 'light' : 'dark');
+}
+
+function setView(v){
+  currentView = v;
+  try{ localStorage.setItem('viewMode', v); } catch(e){}
+  ['table','kanban','mini'].forEach(m=>{
+    const btn = document.getElementById('vs-'+m);
+    if(btn) btn.classList.toggle('active', m===v);
+  });
+  renderWork();
+}
+
+function catClass(o){
+  if(o.delegatedFrom) return 'cat-delegated';
+  if(o.cat==='polymer') return 'cat-polymer';
+  if(o.cat==='biocompat') return 'cat-biocompat';
+  if(o.cat==='assembly') return 'cat-assembly';
+  return 'cat-metal';
+}
+
+function renderKanbanQueue(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет подзаказов</div>';
+  const groups={};
+  orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
+  return Object.entries(groups).map(([mid, subs])=>{
+    const ref=subs[0];
+    const cards=subs.map(o=>{
+      const isDeleg=!!o.delegatedFrom;
+      const btn=isDeleg
+        ?`<button class="kc-btn-take" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁 Просмотр</button>`
+        :`<button class="kc-btn-take" onclick="event.stopPropagation();takeOrder('${o.id}')">▶ Взять</button>`;
+      return `<div class="kanban-card ${catClass(o)}" onclick="${isDeleg?`openDelegPreview('${o.id}')`:''}">
+        <div class="kc-top">
+          <span class="kc-id">${o.id}</span>
+          <div class="kc-badges">${statusBadgesCompact(o)}</div>
+        </div>
+        <div class="kc-patient">${o.patient}</div>
+        <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span> · ${o.qty} шт.</div>
+        <div class="kc-meta"><span class="kc-source">${o.sup}</span><span class="kc-time">${o.arrived}</span></div>
+        <div class="kc-actions">${btn}</div>
+      </div>`;
+    }).join('');
+    return `<div class="kanban-group">
+      <div class="kanban-master-hd">№ ${mid} · ${ref.patient} · <span style="color:var(--text3);font-weight:400">${ref.sup}</span></div>
+      <div class="kanban-cards">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderKanbanWork(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет активных подзаказов</div>';
+  return `<div class="kanban-cards">`+orders.map(o=>{
+    const stages=st(o); const isLast=o.stage===stages.length-1;
+    const pct=Math.round(((o.stage+1)/stages.length)*100);
+    const advBtn=isLast
+      ?`<button class="kc-btn-adv finish" onclick="event.stopPropagation();finishOrder('${o.id}')">✓ ОТК</button>`
+      :`<button class="kc-btn-adv" onclick="event.stopPropagation();advStage('${o.id}')">→ ${stages[o.stage+1]||''}</button>`;
+    return `<div class="kanban-card ${catClass(o)}" onclick="openOrder('${o.id}')">
+      <div class="kc-top">
+        <span class="kc-id">${o.id}</span>
+        <div class="kc-badges">${statusBadgesCompact(o)}</div>
+      </div>
+      <div class="kc-patient">${o.patient}</div>
+      <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></div>
+      <div class="kc-progress"><div class="kc-progress-fill" style="width:${pct}%;background:${isLast?'var(--green-mid)':'var(--blue-mid)'}"></div></div>
+      <div class="kc-stage">${stages[o.stage]||'—'}</div>
+      <div class="kc-actions">${advBtn}<button class="kc-btn-deleg" onclick="event.stopPropagation();openDeleg('${o.id}')">↪</button></div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+
+function renderKanbanDone(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Пока ничего</div>';
+  return `<div class="kanban-cards">`+orders.map(o=>`
+    <div class="kanban-card ${catClass(o)}" style="cursor:default">
+      <div class="kc-top"><span class="kc-id">${o.id}</span><span class="badge b-green" style="font-size:9px">✓ ОТК</span></div>
+      <div class="kc-patient">${o.patient}</div>
+      <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></div>
+      <div class="kc-meta"><span class="kc-source">${consume(o)}</span><span class="kc-time">${o.duration||'—'}</span></div>
+    </div>`).join('')+`</div>`;
+}
+
+function renderMiniQueue(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Нет подзаказов</div>';
+  const groups={};
+  orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
+  return Object.entries(groups).map(([mid, subs])=>{
+    const ref=subs[0];
+    const rows=subs.map(o=>{
+      const isDeleg=!!o.delegatedFrom;
+      const btn=isDeleg
+        ?`<button class="mini-btn preview" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁</button>`
+        :`<button class="mini-btn" onclick="event.stopPropagation();takeOrder('${o.id}')">▶ Взять</button>`;
+      return `<div class="mini-sub">
+        <span class="mini-arrow">↳</span>
+        <span class="mini-id">${o.id}</span>
+        <span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}" style="font-size:9px;flex-shrink:0">${o.type}</span>
+        <span class="mini-patient">${o.qty} шт. ${statusBadgesCompact(o)}</span>
+        <div class="mini-btns">${btn}</div>
+      </div>`;
+    }).join('');
+    return `<div class="mini-master">
+      <div class="mini-master-hd">№ ${mid} · ${ref.patient} · <span style="font-weight:400;color:var(--text3)">${ref.sup}</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function renderMiniWork(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Нет активных</div>';
+  return orders.map(o=>{
+    const stages=st(o); const isLast=o.stage===stages.length-1;
+    const advBtn=isLast
+      ?`<button class="mini-btn finish" onclick="event.stopPropagation();finishOrder('${o.id}')">✓</button>`
+      :`<button class="mini-btn" onclick="event.stopPropagation();advStage('${o.id}')">→</button>`;
+    return `<div class="mini-sub" style="padding-left:0;border-bottom:1px solid var(--border)">
+      <span class="mini-id" style="min-width:72px">${o.id}</span>
+      <span class="mini-patient" onclick="openOrder('${o.id}')" style="cursor:pointer">${o.patient}</span>
+      <span class="mini-stage">${stages[o.stage]||'—'}</span>
+      <div class="mini-btns">${advBtn}<button class="mini-btn deleg" onclick="event.stopPropagation();openDeleg('${o.id}')">↪</button></div>
+    </div>`;
+  }).join('');
+}
+
+function renderMiniDone(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Пока ничего</div>';
+  return orders.map(o=>`
+    <div class="mini-sub" style="padding-left:0;border-bottom:1px solid var(--border)">
+      <span class="mini-id" style="min-width:72px">${o.id}</span>
+      <span class="mini-patient">${o.patient}</span>
+      <span class="mini-stage" style="color:var(--green)">${o.finishedAt||'—'}</span>
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${o.duration||''}</span>
+    </div>`).join('');
+}
+
+/* ─── WORK TABLES ─── */
+/* Группирует подзаказы по masterId и рендерит мастер-строку + подзаказы (для таблицы очереди) */
+function renderQueueGroupRows(orders){
+  if(!orders.length) return '';
+  const groups = {};
+  orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
+  let html='';
+  Object.entries(groups).forEach(([masterId, subs])=>{
+    const ref=subs[0];
+    const hasUrgent=subs.some(o=>o.urgent);
+    const deadlines=[...new Set(subs.filter(o=>o.deadline).map(o=>fmtDeadline(o.deadline)))];
+    html+=`<tr class="master-row">
+      <td style="padding-top:12px">№ ${masterId}</td>
+      <td style="padding-top:12px"></td>
+      <td style="color:var(--text2);font-weight:400;padding-top:12px">${ref.patient}</td>
+      <td style="color:var(--text3);font-weight:400;padding-top:12px">${ref.sup}</td>
+      <td style="padding-top:12px"></td>
+      <td style="padding-top:12px">${hasUrgent?'<span class="badge b-urgent">🔥 Срочно</span>':''}${deadlines.length?`<span class="badge b-deadline">⏳ до ${deadlines[0]}</span>`:''}</td>
+      <td style="padding-top:12px"></td>
+      <td style="padding-top:12px"></td>
+    </tr>`;
+    subs.forEach(o=>{
+      const isDeleg=!!o.delegatedFrom;
+      const rowCls='sub-row'+(isDeleg?' row-click':'');
+      const rowClick=isDeleg?`onclick="openDelegPreview('${o.id}')"`:'';
+      const takeBtn=isDeleg
+        ?`<button class="btn-take" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁 Просмотр</button>`
+        :`<button class="btn-take" onclick="takeOrder('${o.id}')">▶ Взять</button>`;
+      html+=`<tr class="${rowCls}" ${rowClick}>
+        <td><span style="color:var(--text3);font-size:10px">↳</span> <span style="font-size:11px;color:var(--text2)">${o.id}</span></td>
+        <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></td>
+        <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
+        <td><span class="badge b-gray">${o.sup}</span></td>
+        <td style="font-size:12px">${o.qty} шт.</td>
+        <td>${statusBadgesCompact(o)}</td>
+        <td style="font-size:11px;color:var(--text2)">${o.arrived}</td>
+        <td>${takeBtn}</td>
+      </tr>`;
+    });
+    html+=`<tr><td colspan="8" style="height:10px;background:var(--bg);border:none;padding:0"></td></tr>`;
+  });
+  return html;
+}
+
+function renderWork(){
+  // В очереди показываем только подзаказы без назначения, либо адресованные лично мне
+  const myIdForFilter = currentUser ? currentUser.id : null;
+  const free=queue.filter(o=>!o.worker && (!o.delegatedTo || o.delegatedTo===myIdForFilter));
+  const working=myWork.filter(o=>!o.finishedAt);
+  const finished=[...done,...myWork.filter(o=>o.finishedAt)];
+  document.getElementById('sQueue').textContent=free.length;
+  document.getElementById('sActive').textContent=working.length;
+  document.getElementById('sDone').textContent=finished.length;
+  const tc=working.reduce((a,o)=>a+consumeNum(o),0)+finished.reduce((a,o)=>a+consumeNum(o),0);
+  document.getElementById('sConsume').textContent=Math.round(tc);
+
+  // Применяем вид
+  const v = currentView||'table';
+  ['vs-table','vs-kanban','vs-mini'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active', id==='vs-'+v);
+  });
+
+  // Показываем/скрываем нужные контейнеры
+  ['qBody','wBody','dBody'].forEach(id=>{
+    const el=document.getElementById(id);
+    const tbl=el&&el.closest('table');
+    if(tbl) tbl.style.display=v==='table'?'':'none';
+  });
+  ['qKanban','wKanban','dKanban','qMini','wMini','dMini'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+  if(v==='kanban'){
+    ['qKanban','wKanban','dKanban'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=''; });
+  } else if(v==='mini'){
+    ['qMini','wMini','dMini'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=''; });
+  }
+
+  // Перепечатки — отдельный приоритетный список (исключаем из обычной очереди и фильтра материала)
+  const reprints = free.filter(o=>o.isReprint);
+  const nonReprintFree = free.filter(o=>!o.isReprint);
+
+  const reprintCard = document.getElementById('reprintCard');
+  if(reprintCard) reprintCard.style.display = reprints.length ? '' : 'none';
+  document.getElementById('reprintBody').innerHTML = renderQueueGroupRows(reprints) ||
+    `<tr><td colspan="8" class="empty-row">Нет перепечаток</td></tr>`;
+
+  const filterCat = (document.getElementById('qFilterCat')||{}).value || '';
+  const filteredFree = nonReprintFree.filter(o=>!filterCat||o.cat===filterCat);
+
+  if(filteredFree.length){
+    document.getElementById('qBody').innerHTML = renderQueueGroupRows(filteredFree);
+  } else {
+    document.getElementById('qBody').innerHTML=`<tr><td colspan="8" class="empty-row">${filterCat?'Нет подзаказов по выбранному материалу':'Нет свободных подзаказов'}</td></tr>`;
+  }
+
+  if(working.length){
+    const wGroups = {};
+    working.forEach(o=>{ if(!wGroups[o.masterId]) wGroups[o.masterId]=[]; wGroups[o.masterId].push(o); });
+    let wHtml='';
+    Object.entries(wGroups).forEach(([masterId, subs])=>{
+      const isMulti = subs.length>1 || isMultiMaterialOrder(masterId);
+      if(isMulti){
+        // Составной заказ — мастер-строка + подзаказы со смещением
+        const ref=subs[0];
+        wHtml+=`<tr class="master-row">
+          <td style="padding-top:12px">№ ${masterId}</td>
+          <td style="padding-top:12px"></td>
+          <td style="color:var(--text2);font-weight:400;padding-top:12px">${ref.patient}</td>
+          <td style="color:var(--text3);font-weight:400;padding-top:12px">${ref.sup}</td>
+          <td style="padding-top:12px"></td>
+          <td style="padding-top:12px"></td>
+          <td style="padding-top:12px"></td>
+          <td style="padding-top:12px"></td>
+          <td style="padding-top:12px"></td>
+        </tr>`;
+      }
+      subs.forEach(o=>{
+        const stages=st(o);
+        const isLast=o.stage===stages.length-1;
+        const nextName=!isLast?stages[o.stage+1]:'';
+        const lastStageName = stages[stages.length-1];
+        const isAssemblyReadyStage = (lastStageName==='Готов к сборке' || lastStageName==='Беглый контроль');
+        const finishLabel = isAssemblyReadyStage ? '&#10003; Готово' : '&#10003; Готово / ОТК';
+        const advBtn=isLast
+          ?`<button class="btn-adv finish" onclick="event.stopPropagation();finishOrder('${o.id}')">${finishLabel}</button>`
+          :`<button class="btn-adv" onclick="event.stopPropagation();advStage('${o.id}')">&rarr; ${nextName}</button>`;
+        const delegBtn=`<button class="btn-deleg" onclick="event.stopPropagation();openDeleg('${o.id}')">↪ Делегировать</button>`;
+        const idCell = isMulti
+          ? `<span style="color:var(--text3);font-size:10px">↳</span> <span style="font-size:11px;color:var(--text2)">${o.id}</span>`
+          : `<strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div>`;
+        wHtml+=`<tr class="row-click" onclick="openOrder('${o.id}')">
+          <td>${idCell}</td>
+          <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':'b-amber'}">${o.type}</span></td>
+          <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isMulti?'':o.patient}</td>
+          <td><span class="badge b-gray">${isMulti?'':o.sup}</span></td>
+          <td>${dotRow(o)}</td>
+          <td>${stageBadge(o)}</td>
+          <td style="font-size:11px;color:var(--text2)">${consume(o)}</td>
+          <td>${statusBadgesCompact(o)}</td>
+          <td style="display:flex;flex-direction:column;gap:4px">${advBtn}${delegBtn}</td>
+        </tr>`;
+      });
+      if(isMulti) wHtml+=`<tr><td colspan="9" style="height:10px;background:var(--bg);border:none;padding:0"></td></tr>`;
+    });
+    document.getElementById('wBody').innerHTML=wHtml;
+  } else {
+    document.getElementById('wBody').innerHTML=`<tr><td colspan="9" class="empty-row">Нет активных подзаказов</td></tr>`;
+  }
+
+  document.getElementById('dBody').innerHTML=finished.length?finished.map(o=>`
+    <tr>
+      <td><strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div></td>
+      <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></td>
+      <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}${o.finishedAsAssemblyReady?' <span class="badge" style="background:#eee9fb;color:#3c3489;font-size:9px">готов к сборке</span>':''}</td>
+      <td><span class="badge b-gray">${o.sup}</span></td>
+      <td style="font-size:12px;color:var(--green);font-weight:700">${consume(o)}</td>
+      <td style="font-size:11px;color:var(--text2)">${o.finishedAt||'–'}</td>
+      <td style="font-size:11px;color:var(--blue);font-weight:700">${o.duration||'–'}</td>
+    </tr>`).join('')
+    :`<tr><td colspan="7" class="empty-row">Пока ничего</td></tr>`;
+
+  // Kanban/Mini рендеры
+  const qk=document.getElementById('qKanban'); if(qk) qk.innerHTML=renderKanbanQueue(filteredFree);
+  const wk=document.getElementById('wKanban'); if(wk) wk.innerHTML=renderKanbanWork(working);
+  const dk=document.getElementById('dKanban'); if(dk) dk.innerHTML=renderKanbanDone(finished);
+  const qm=document.getElementById('qMini');   if(qm) qm.innerHTML=renderMiniQueue(filteredFree);
+  const wm=document.getElementById('wMini');   if(wm) wm.innerHTML=renderMiniWork(working);
+  const dm=document.getElementById('dMini');   if(dm) dm.innerHTML=renderMiniDone(finished);
+}
+
+async function takeOrder(id){
+  const idx=queue.findIndex(o=>o.id===id);
+  if(idx===-1)return;
+  const o=queue[idx];
+  const myId = currentUser ? currentUser.id : null;
+  const myName = currentUser ? currentUser.name : CURRENT_USER;
+
+  const stage = (o.delegHistory && typeof o.delegHistory.doneStage==='number') ? o.delegHistory.doneStage+1 : 0;
+  const takenAt = Date.now();
+
+  // АТОМАРНОЕ взятие: UPDATE сработает только если worker сейчас NULL в базе.
+  // Если кто-то опередил — won будет false, и мы сразу узнаём об этом.
+  const won = await tryTakeOrderInDb(id, myId, {
+    stage, taken_at: new Date(takenAt).toISOString(),
+    current_stage_start: new Date(takenAt).toISOString(),
+    delegated_to: null,
+  });
+
+  if(!won){
+    // Кто-то другой взял этот подзаказ буквально только что
+    queue.splice(idx,1);
+    renderWork();
+    showToast('⚠ Подзаказ '+id+' уже взяли в работу — обновляем список', 5000);
+    return;
+  }
+
+  queue.splice(idx,1);
+  o.worker=myName; o.workerId=myId; o.takenAt=takenAt;
+  o.delegatedTo=null;
+  o.stage = stage;
+  o.stageTimings = o.stageTimings || [];
+  o.currentStageStart = takenAt;
+  const c=MAT_CFG[o.type];
+  if(c){
+    const mat=MATERIALS.find(m=>m.id===c.matId);
+    if(mat) mat.current=Math.max(0,mat.current-c.ml*o.qty);
+    if(c.gasPerPrint){
+      const gas=MATERIALS.find(m=>m.id==='gas');
+      if(gas) gas.current=Math.max(0, gas.current - c.gasPerPrint*o.qty);
+    }
+  }
+  myWork.push(o);
+  renderWork();renderCounters();
+  openOrder(o.id);
+}
+
+/* ─── DELEGATION PREVIEW MODAL ─── */
+let previewId = null;
+function openDelegPreview(id){
+  const o=queue.find(x=>x.id===id);if(!o)return;
+  previewId=id;
+  const stages=st(o);
+  const dh=o.delegHistory||{doneStage:0,note:'',takenAt:'-',handedAt:'-',duration:'-'};
+  document.getElementById('dpId').textContent=o.id;
+  document.getElementById('dpInfo').innerHTML=`
+    <div class="ii"><div class="ik">Заказ</div><div class="iv">№ ${o.masterId}</div></div>
+    <div class="ii"><div class="ik">Пациент</div><div class="iv">${o.patient}</div></div>
+    <div class="ii"><div class="ik">Изделие</div><div class="iv">${o.type} × ${o.qty} шт.</div></div>`;
+  document.getElementById('dpFrom').textContent=o.delegatedFrom;
+  document.getElementById('dpNote').textContent=dh.note||'Комментарий не оставлен.';
+  document.getElementById('dpStages').innerHTML=stages.map((s,i)=>{
+    const isDone=i<=dh.doneStage;
+    const cls=isDone?'s-done':'s-future';
+    const nc=isDone?'#65c16f':'#c7cfd6';
+    const ico=isDone?'✓':'○';
+    return `<div class="stage-row ${cls}">
+      <div class="stage-num" style="background:${nc}25;color:${nc}">${ico}</div>
+      <div class="stage-name">${s}</div>
+      ${isDone?'<span class="badge b-green">выполнено '+o.delegatedFrom+'</span>':'<span class="badge b-gray">ожидает</span>'}
+    </div>`;
+  }).join('');
+  document.getElementById('dpTimeInfo').innerHTML=`
+    <div class="ii"><div class="ik">Взял в работу</div><div class="iv">${dh.takenAt}</div></div>
+    <div class="ii"><div class="ik">Передал</div><div class="iv">${dh.handedAt}</div></div>
+    <div class="ii"><div class="ik">Затрачено времени</div><div class="iv" style="color:var(--blue)">${dh.duration}</div></div>`;
+  document.getElementById('delegPreviewOverlay').classList.add('open');
+}
+function closeDelegPreview(){
+  document.getElementById('delegPreviewOverlay').classList.remove('open');
+  previewId=null;
+}
+function takeFromPreview(){
+  if(!previewId) return;
+  const id=previewId;
+  closeDelegPreview();
+  takeOrder(id);
+}
+
+/* ─── ORDER MODAL ─── */
+function openOrder(id){
+  const o=myWork.find(x=>x.id===id);if(!o)return;
+  openOrderId=id;
+  const stages=st(o);
+  const c=MAT_CFG[o.type];
+  document.getElementById('oTitle').textContent='Заказ № '+o.masterId+' · подзаказ '+o.id;
+  document.getElementById('oInfo').innerHTML=`
+    <div class="ii"><div class="ik">Пациент</div><div class="iv">${o.patient}</div></div>
+    <div class="ii"><div class="ik">Изделие</div><div class="iv">${o.type} × ${o.qty} шт.</div></div>
+    <div class="ii"><div class="ik">Источник</div><div class="iv">${o.sup}</div></div>
+    <div class="ii"><div class="ik">Поступил</div><div class="iv">${o.arrived}</div></div>
+    <div class="ii"><div class="ik">Категория</div><div class="iv"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':'b-amber'}">${o.cat==='polymer'?'Полимер':'Металл'}</span></div></div>
+    <div class="ii"><div class="ik">Исполнитель</div><div class="iv">${o.worker}</div></div>`;
+
+  const statusHtml=statusBadges(o);
+  document.getElementById('oStatusRow').innerHTML=statusHtml||'';
+
+  if(o.comment){
+    document.getElementById('oCommentWrap').innerHTML=`
+      <div class="comment-box">
+        <span class="comment-icon">💬</span>
+        <div>
+          <div class="comment-label">Комментарий поставщика заказа</div>
+          <div class="comment-text">${o.comment}</div>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('oCommentWrap').innerHTML='';
+  }
+
+  document.getElementById('oMat').innerHTML=c?`
+    <div><div class="mk">Материал</div><div class="mv">${c.matId==='abs'?'ABS like серый':c.matId==='dental'?'Dental clear form 2':c.matId==='surgical'?'Surgical Guide Resin':'Металл (порошок)'}</div></div>
+    <div style="text-align:center"><div class="mk">На 1 шт.</div><div class="mv">${c.ml} ${c.unit}</div></div>
+    <div style="text-align:right"><div class="mk">Итого (×${o.qty})</div><div class="mv" style="color:var(--blue)">${c.ml*o.qty} ${c.unit}</div></div>`:'';
+
+  if(o.file){
+    document.getElementById('oFileWrap').innerHTML=`
+      <div class="file-box">
+        <div class="file-icon">📐</div>
+        <div class="file-info">
+          <div class="file-name">${o.file.name}</div>
+          <div class="file-meta">Файл модели для печати · ${o.file.size}</div>
+        </div>
+        <button class="btn-download" onclick="downloadFile('${o.id}')">⬇ Скачать</button>
+      </div>`;
+  } else {
+    document.getElementById('oFileWrap').innerHTML='';
+  }
+
+  document.getElementById('oStages').innerHTML=stages.map((s,i)=>{
+    const cls=i<o.stage?'s-done':i===o.stage?'s-active':'s-future';
+    const nc=i<o.stage?'#65c16f':i===o.stage?'#2fc6f6':'#c7cfd6';
+    const ico=i<o.stage?'✓':i===o.stage?'▶':'○';
+    return `<div class="stage-row ${cls}">
+      <div class="stage-num" style="background:${nc}25;color:${nc}">${ico}</div>
+      <div class="stage-name">${s}</div>
+      ${i===o.stage?'<span class="badge b-blue">сейчас</span>':i<o.stage?'<span class="badge b-green">готово</span>':''}
+    </div>`;
+  }).join('');
+
+  const isLast=o.stage===stages.length-1;
+  const isPrepStage = o.stage===0; // "Подготовка к печати" — первый этап
+  const lastStageName = stages[stages.length-1];
+  const isAssemblyReadyStage = (lastStageName==='Готов к сборке' || lastStageName==='Беглый контроль');
+  const finishLabel = isAssemblyReadyStage
+    ? '✓ Готово — отправить на сборку'
+    : '✓ Готово — передать в ОТК';
+  const advHtml = isLast
+    ? `<button class="btn-success" onclick="finishOrder('${o.id}')">${finishLabel}</button>`
+    : `<button class="btn-primary" onclick="advStage('${o.id}')">→ Следующий этап: ${stages[o.stage+1]}</button>`;
+  const backBtn = o.stage>0
+    ? `<button class="btn-ghost" style="border-color:#9a6400;color:#9a6400" onclick="prevStage('${o.id}')" title="Вернуть на этап: ${stages[o.stage-1]}">← Назад: ${stages[o.stage-1]}</button>`
+    : '';
+  const returnBtn = isPrepStage
+    ? `<button class="btn-ghost" style="border-color:#ed6a5e;color:#b3372c" onclick="openReturnModal('${o.id}')">↩ Вернуть поставщику</button>`
+    : '';
+  document.getElementById('oFooter').innerHTML=`
+    ${advHtml}
+    ${backBtn}
+    <button class="btn-secondary" onclick="openDeleg('${o.id}')">↪ Делегировать</button>
+    ${returnBtn}
+    <button class="btn-ghost" onclick="closeOrder()">Закрыть</button>`;
+  document.getElementById('orderOverlay').classList.add('open');
+}
+function downloadFile(id){
+  const o=myWork.find(x=>x.id===id);
+  if(!o||!o.file) return;
+  const blob=new Blob(['Имитация файла модели для печати: '+o.file.name+'\nЗаказ № '+o.masterId+' / подзаказ '+o.id+'\n\nЭто демонстрационный placeholder — в реальной системе здесь будет STL/3MF файл модели.'],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=o.file.name.replace(/\.stl$/,'.txt');
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function advStage(id){
+  const o=myWork.find(x=>x.id===id);if(!o)return;
+  const s=st(o);
+  if(o.stage<s.length-1){
+    recordStageTiming(o, o.stage); // фиксируем завершённый этап
+    o.stage++;
+    o.currentStageStart = Date.now();
+    renderWork();
+    if(document.getElementById('orderOverlay').classList.contains('open')) openOrder(id);
+  }
+}
+function prevStage(id){
+  const o=myWork.find(x=>x.id===id);if(!o)return;
+  if(o.stage>0){
+    // При откате убираем тайминг текущего(незавершённого) этапа, если он был начат
+    o.stageTimings = (o.stageTimings||[]).filter(t=>t.stageIndex < o.stage-1);
+    o.stage--;
+    o.currentStageStart = Date.now();
+    renderWork();
+    if(document.getElementById('orderOverlay').classList.contains('open')) openOrder(id);
+    showToast('← Подзаказ '+o.id+' возвращён на этап «'+st(o)[o.stage]+'»');
+  }
+}
+/* Фиксирует фактическое время, проведённое на этапе stageIndex */
+function recordStageTiming(o, stageIndex){
+  const stages = st(o);
+  const start = o.currentStageStart || o.takenAt || Date.now();
+  const end = Date.now();
+  const ms = Math.max(0, end-start);
+  const totalMin = Math.round(ms/60000);
+  const h = Math.floor(totalMin/60), m = totalMin%60;
+  const durationStr = h>0 ? (h+'ч '+(m>0?m+'м':'')) : (m+'м');
+  if(!o.stageTimings) o.stageTimings = [];
+  // Убираем возможный дубль (если этап уже был зафиксирован — перезаписываем)
+  o.stageTimings = o.stageTimings.filter(t=>t.stageIndex!==stageIndex);
+  o.stageTimings.push({
+    stageIndex,
+    stageName: stages[stageIndex],
+    start, end, durationMs: ms, duration: durationStr,
+  });
+}
+function finishOrder(id){
+  const idx=myWork.findIndex(x=>x.id===id);if(idx===-1)return;
+  const o=myWork[idx];
+  const stages=st(o);
+  const lastStageName = stages[stages.length-1];
+  recordStageTiming(o, o.stage); // фиксируем финальный (последний) этап
+  o.finishedAtTs=Date.now();
+  o.finishedAt=nowTime();
+  // И "Беглый контроль" (одноматериальный) и "Готов к сборке" (составной) — оба
+  // означают что подзаказ готов к сборке заказа
+  o.finishedAsAssemblyReady = (lastStageName==='Готов к сборке' || lastStageName==='Беглый контроль');
+  if(o.takenAt){
+    const ms=o.finishedAtTs-o.takenAt;
+    const totalMin=Math.round(ms/60000);
+    const h=Math.floor(totalMin/60), m=totalMin%60;
+    o.duration=h>0?(h+'ч '+(m>0?m+'м':'')):(m+'м');
+  } else {
+    o.duration='–';
+  }
+  done.unshift(o);
+  myWork.splice(idx,1);
+  closeOrder();renderWork();
+  checkAutoAssembly(o.masterId);
+}
+function closeOrder(){document.getElementById('orderOverlay').classList.remove('open');openOrderId=null;}
+
+/* ─── DELEGATE MODAL ─── */
+function openDeleg(id){
+  delegTargetId=id;
+  const o=myWork.find(x=>x.id===id);if(!o)return;
+  document.getElementById('delegOrderId').textContent=o.id;
+  // Список сотрудников — из актуального динамического USERS, исключая себя и администратора
+  const myName = currentUser ? currentUser.name : CURRENT_USER;
+  const candidates = Object.values(USERS).filter(u=>u.name!==myName && !u.isAdmin);
+  document.getElementById('delegList').innerHTML = candidates.length ? candidates.map(u=>`
+    <button class="deleg-opt" onclick="confirmDeleg('${u.name}')">
+      <div class="deleg-av">${u.initials || makeInitials(u.name)}</div>
+      <div style="flex:1">
+        <div class="deleg-name">${u.name}</div>
+        <div class="deleg-role">${u.role}</div>
+      </div>
+      <span style="color:var(--text3)">→</span>
+    </button>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Нет других сотрудников для делегирования</div>';
+  document.getElementById('delegOverlay').classList.add('open');
+}
+function confirmDeleg(targetEmp){
+  const myName = currentUser ? currentUser.name : CURRENT_USER;
+  if(targetEmp === myName){
+    showToast('⚠ Нельзя делегировать заказ самому себе');
+    return;
+  }
+  const idx=myWork.findIndex(x=>x.id===delegTargetId);
+  if(idx===-1) return;
+  const o=myWork[idx];
+  // Делегирование возвращает подзаказ в ОБЩУЮ ОЧЕРЕДЬ (не сразу получателю в работу) —
+  // получатель должен сначала открыть предпросмотр и увидеть от кого и что уже сделано.
+  // delegTo указывает кому именно адресован (получатель видит его как "свой" в очереди),
+  // worker сбрасывается, т.к. в работе его пока никто не держит.
+  o.delegHistory = {
+    doneStage: o.stage,
+    note: o.comment || '',
+    takenAt: o.takenAt ? new Date(o.takenAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) : '-',
+    handedAt: nowTime(),
+    duration: o.takenAt ? (()=>{ const ms=Date.now()-o.takenAt; const m=Math.round(ms/60000); const h=Math.floor(m/60); return h>0?(h+'ч '+(m%60)+'м'):(m+'м'); })() : '-',
+  };
+  o.delegatedFrom = myName;
+  // delegatedTo хранит UUID получателя (для RLS и связи с profiles), targetEmp — имя для поиска
+  const targetUser = Object.values(USERS).find(u=>u.name===targetEmp);
+  o.delegatedTo = targetUser ? targetUser.id : null;
+  o._delegatedToName = targetEmp; // для локального тоста/отображения, не пишется в БД напрямую
+  o.worker = null;
+  o.workerId = null;
+  o.takenAt = null;
+  myWork.splice(idx,1);
+  queue.unshift(o);
+  closeDeleg();
+  closeOrder();
+  renderWork();
+}
+function closeDeleg(){document.getElementById('delegOverlay').classList.remove('open');delegTargetId=null;}
+
+/* ─── HISTORY ─── */
+let histFiltered=[];
+function applyFilters(){
+  const from=document.getElementById('fFrom').value;
+  const to=document.getElementById('fTo').value;
+  const emp=document.getElementById('fEmp').value;
+  const type=document.getElementById('fType').value;
+  const cat=document.getElementById('fCat').value;
+  histFiltered=ARCHIVE.filter(o=>{
+    const d=isoDate(o.finishedAt);
+    if(from&&d<from)return false;
+    if(to&&d>to)return false;
+    if(emp&&o.emp!==emp)return false;
+    if(type&&o.type!==type)return false;
+    if(cat&&o.cat!==cat)return false;
+    return true;
+  });
+  renderHistory();
+}
+function resetFilters(){
+  ['fFrom','fTo'].forEach(id=>document.getElementById(id).value='');
+  ['fEmp','fType','fCat'].forEach(id=>document.getElementById(id).value='');
+  applyFilters();
+}
+function renderHistory(){
+  const f=histFiltered;
+  document.getElementById('resultCount').textContent=f.length+' записей';
+  const totalQty=f.reduce((a,o)=>a+o.qty,0);
+  const poly=f.filter(o=>o.cat==='polymer').length;
+  const metal=f.filter(o=>o.cat==='metal').length;
+  document.getElementById('histSummary').innerHTML=`
+    <div class="sc"><div class="sl">Заказов</div><div class="sv">${f.length}</div></div>
+    <div class="sc"><div class="sl">Изделий</div><div class="sv">${totalQty}</div><div class="ss">штук</div></div>
+    <div class="sc"><div class="sl">Полимер</div><div class="sv" style="color:var(--blue)">${poly}</div></div>
+    <div class="sc"><div class="sl">Металл</div><div class="sv" style="color:var(--amber)">${metal}</div></div>
+    <div class="sc"><div class="sl">Сотрудников</div><div class="sv">${new Set(f.map(o=>o.emp)).size}</div></div>`;
+  const acc={};
+  const MC={'abs':'ABS like серый','dental':'Dental clear','surgical':'Surgical Guide','metal':'Металл (порошок)'};
+  f.forEach(o=>{const c=MAT_CFG[o.type];if(!c)return;const k=MC[c.matId]+' ('+c.unit+')';acc[k]=(acc[k]||0)+consumeNum(o);if(o.cat==='polymer')acc['Спирт (мл)']=(acc['Спирт (мл)']||0)+o.qty*20;});
+  const MC2={'ABS like серый':'#1b6fb8','Dental clear':'#5b4a9e','Surgical Guide':'#0f7a6b','Металл (порошок)':'#9a6400','Спирт':'#0f7a6b'};
+  const entries=Object.entries(acc).sort((a,b)=>b[1]-a[1]);
+  const mx=entries[0]?entries[0][1]:1;
+  document.getElementById('matBars').innerHTML='<div class="mb-title">Расход материалов за период</div>'+
+    (entries.length?entries.map(([k,v])=>{
+      const base=k.split(' (')[0];
+      const unit=k.includes('г)')?'г':'мл';
+      const pct=Math.round(v/mx*100);
+      const col=MC2[base]||'#1b6fb8';
+      const disp=unit==='г'&&v>=1000?(v/1000).toFixed(2)+' кг':Math.round(v)+' '+unit;
+      return `<div class="mb-row"><div class="mb-name" title="${base}">${base}</div><div class="mb-bar-bg"><div class="mb-bar-fill" style="width:${pct}%;background:${col}33;border:1px solid ${col}55"></div></div><div class="mb-val" style="color:${col}">${disp}</div></div>`;
+    }).join(''):'<div style="font-size:12px;color:var(--text3);padding:4px 0">Нет данных</div>');
+  const sorted=[...f].sort((a,b)=>b.finishedAt-a.finishedAt);
+  document.getElementById('histBody').innerHTML=sorted.length?sorted.map(o=>`
+    <tr class="row-click" onclick="openHist('${o.id}')">
+      <td><strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div></td>
+      <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':'b-amber'}">${o.type}</span></td>
+      <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
+      <td style="font-size:11px;color:var(--text2)">${o.emp}</td>
+      <td><span class="badge b-gray">${o.sup}</span></td>
+      <td>${o.qty}</td>
+      <td style="font-size:11px;color:var(--text2)">${consume(o)}</td>
+      <td style="font-size:11px;color:var(--text2)">${fmtTime(o.finishedAt)}</td>
+      <td style="font-size:11px;color:var(--text2)">${fmtDate(o.finishedAt)}</td>
+    </tr>`).join(''):`<tr><td colspan="9" class="empty-row">Нет заказов за выбранный период</td></tr>`;
+}
+function openHist(id){
+  const o=ARCHIVE.find(x=>x.id===id);if(!o)return;
+  const c=MAT_CFG[o.type];
+  document.getElementById('hTitle').textContent='Заказ № '+o.masterId+' · подзаказ '+o.id;
+  document.getElementById('hInfo').innerHTML=`
+    <div class="ii"><div class="ik">Пациент</div><div class="iv">${o.patient}</div></div>
+    <div class="ii"><div class="ik">Изделие</div><div class="iv">${o.type} × ${o.qty} шт.</div></div>
+    <div class="ii"><div class="ik">Сотрудник</div><div class="iv">${o.emp}</div></div>
+    <div class="ii"><div class="ik">Источник</div><div class="iv">${o.sup}</div></div>
+    <div class="ii"><div class="ik">Расход</div><div class="iv" style="color:var(--blue)">${consume(o)}</div></div>
+    <div class="ii"><div class="ik">Завершён</div><div class="iv">${fmtDate(o.finishedAt)} ${fmtTime(o.finishedAt)}</div></div>`;
+  const stages=o.cat==='polymer'?SP:SM;
+  document.getElementById('hStages').innerHTML=stages.map(s=>`
+    <div class="stage-row s-done">
+      <div class="stage-num" style="background:#65c16f25;color:#65c16f">✓</div>
+      <div class="stage-name">${s}</div>
+      <span class="badge b-green">выполнено</span>
+    </div>`).join('');
+  document.getElementById('histOverlay').classList.add('open');
+}
+function closeHist(){document.getElementById('histOverlay').classList.remove('open');}
+
+/* ─── REFILL MODAL ─── */
+function openRefill(id){
+  const matCheck=MATERIALS.find(m=>m.id===id);
+  if(matCheck&&matCheck.isCalib){calibDone();return;}
+  refillTarget=id;
+  const mat=MATERIALS.find(m=>m.id===id);
+  document.getElementById('rTitle').textContent='Пополнение: '+mat.label;
+  const isAlc=id==='alc';
+  const isGas=id==='gas';
+  const maxAdd=isAlc?(mat.total-mat.current):mat.total;
+  const displayUnit=isAlc?'л':isGas?'бал.':(mat.unit==='г'?'г':'мл');
+  const divisor=isAlc?1000:isGas?100:1;
+  const curDisp=isAlc?((mat.current/1000).toFixed(1)+' л'):isGas?((mat.current/100).toFixed(1)+' бал.'):(mat.unit==='г'&&mat.current>=1000?(mat.current/1000).toFixed(2)+' кг':Math.round(mat.current)+' '+mat.unit);
+  const maxDisp=isAlc?((mat.total/1000)+' л'):isGas?((mat.total/100)+' бал.'):(mat.unit==='г'?(mat.total/1000)+' кг':(mat.total/1000)+' л');
+  let info='';
+  if(isAlc){
+    info=`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Таймер замены сбросится на <strong>3 суток</strong> после подтверждения.</div>`;
+  } else {
+    info=`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">Текущий остаток: <strong>${curDisp}</strong> из <strong>${maxDisp}</strong></div>`;
+  }
+  info+=`<div class="refill-input-row">
+    <label>Добавить:</label>
+    <input type="number" id="rQtyInput" min="1" max="${Math.round(maxAdd/divisor)}" value="${Math.round(maxAdd/divisor)}" step="${isAlc?'0.1':'1'}" oninput="updateRefillPreview()">
+    <span class="r-unit">${displayUnit}</span>
+  </div>
+  <div class="refill-result" id="rPreview">
+    <span>После пополнения:</span><span id="rAfter">–</span>
+  </div>`;
+  document.getElementById('rInfo').innerHTML=info;
+  const btn=document.getElementById('rOkBtn');
+  btn.style.background=mat.bgcolor;btn.style.color=mat.tcolor;
+  updateRefillPreview();
+  document.getElementById('refillOverlay').classList.add('open');
+}
+function updateRefillPreview(){
+  const mat=MATERIALS.find(m=>m.id===refillTarget);
+  if(!mat) return;
+  const isAlc=refillTarget==='alc';
+  const isGas=refillTarget==='gas';
+  const divisor=isAlc?1000:isGas?100:1;
+  const inp=document.getElementById('rQtyInput');
+  if(!inp) return;
+  const addRaw=parseFloat(inp.value)||0;
+  const addVal=addRaw*divisor;
+  const after=Math.min(mat.total, mat.current+addVal);
+  const pct=Math.round(after/mat.total*100);
+  let afterStr='';
+  if(isAlc) afterStr=(after/1000).toFixed(1)+' л ('+pct+'%)';
+  else if(isGas) afterStr=(after/100).toFixed(1)+' бал. ('+pct+'%)';
+  else if(mat.unit==='г') afterStr=after>=1000?(after/1000).toFixed(2)+' кг ('+pct+'%)':(Math.round(after)+' г ('+pct+'%)');
+  else afterStr=after>=1000?(after/1000).toFixed(1)+' л ('+pct+'%)':(Math.round(after)+' мл ('+pct+'%)');
+  const el=document.getElementById('rAfter');
+  if(el) el.textContent=afterStr;
+}
+function confirmRefill(){
+  const mat=MATERIALS.find(m=>m.id===refillTarget);
+  if(!mat) return;
+  const isAlc=refillTarget==='alc';
+  const isGas=refillTarget==='gas';
+  const divisor=isAlc?1000:isGas?100:1;
+  const inp=document.getElementById('rQtyInput');
+  const addRaw=parseFloat(inp?inp.value:0)||0;
+  const addVal=addRaw*divisor;
+  mat.current=Math.min(mat.total, mat.current+addVal);
+  closeRefill();renderCounters();
+}
+function closeRefill(){document.getElementById('refillOverlay').classList.remove('open');refillTarget=null;}
+
+/* ─── CUSTOM CONFIRM MODAL (замена window.confirm) ─── */
+let _confirmResolve = null;
+function showConfirm(text, title){
+  document.getElementById('confirmTitle').textContent = title || 'Подтверждение';
+  document.getElementById('confirmText').textContent = text;
+  document.getElementById('confirmOverlay').classList.add('open');
+  return new Promise(resolve=>{ _confirmResolve = resolve; });
+}
+function closeConfirm(result){
+  document.getElementById('confirmOverlay').classList.remove('open');
+  if(_confirmResolve){ _confirmResolve(result); _confirmResolve=null; }
+}
+
+/* ─── NAV ─── */
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(name==='history'){
+    const today=new Date(),week=new Date();week.setDate(today.getDate()-6);
+    if(!document.getElementById('fFrom').value){document.getElementById('fFrom').value=isoDate(week);document.getElementById('fTo').value=isoDate(today);}
+    applyFilters();
+  }
+}
+
+/* ─── MOBILE: collapsible material counters ─── */
+function toggleCounters(){
+  const wrap=document.getElementById('countersWrap');
+  const chev=document.getElementById('countersChev');
+  wrap.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+/* ─── SUPABASE CLIENT ─── */
+const SUPABASE_URL = 'https://uprqgvmieexcujzflgaa.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_94W20N0LyOG2erctBQqNsw_M_l-9hDT';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ─── AUTH & USERS ─── */
+// USERS теперь читается из таблицы profiles в Supabase (см. loadProfilesFromDb).
+// Никаких паролей в коде — пароли проверяет Supabase Auth (auth.users), хэшированные.
+let USERS = {}; // login(email) -> profile-like object, кэш после загрузки
+
+function makeInitials(name){
+  const parts = name.trim().split(/\s+/);
+  if(parts.length>=2) return (parts[0][0]+parts[1][0]).toUpperCase();
+  return name.slice(0,2).toUpperCase();
+}
+
+let currentUser = null;
+let pollInterval = null;
+let lastQueueLen = 0;
+let clockInterval = null;
+let adminPollInterval = null;
+let realtimeChannel = null;
+
+/* Email-маска для логина: вводим только короткое имя пользователя (например "Sergey"),
+   а реально под капотом используется email вида Sergey@internal.lab — так сотрудникам
+   не нужно помнить и вводить полноценные email-адреса. */
+function loginToEmail(login){
+  return login.trim().toLowerCase().replace(/\s+/g,'') + '@internal.lab';
+}
+
+async function doLogin(){
+  const loginBtn = document.querySelector('.login-btn');
+  const login = document.getElementById('loginInput').value.trim();
+  const pass  = document.getElementById('passInput').value;
+  if(!login || !pass){
+    document.getElementById('loginError').textContent = 'Введите логин и пароль';
+    document.getElementById('loginError').classList.add('show');
+    return;
+  }
+  if(loginBtn) loginBtn.disabled = true;
+  document.getElementById('loginError').classList.remove('show');
+
+  const email = loginToEmail(login);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  if(loginBtn) loginBtn.disabled = false;
+
+  if(error || !data.user){
+    document.getElementById('loginError').textContent = 'Неверный логин или пароль';
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('passInput').value='';
+    return;
+  }
+
+  // Загружаем профиль (имя, роль, права) из таблицы profiles
+  const { data: profile, error: profErr } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', data.user.id)
+    .single();
+
+  if(profErr || !profile){
+    document.getElementById('loginError').textContent = 'Профиль сотрудника не найден. Обратитесь к администратору.';
+    document.getElementById('loginError').classList.add('show');
+    await sb.auth.signOut();
+    return;
+  }
+
+  currentUser = {
+    id: profile.id,
+    login,
+    name: profile.name,
+    role: profile.role,
+    initials: profile.initials || makeInitials(profile.name),
+    isAdmin: profile.is_admin,
+    schedule: profile.schedule,
+    vacFrom: profile.vacation_from,
+    vacTo: profile.vacation_to,
+  };
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  if(currentUser.isAdmin){
+    initAdmin();
+  } else {
+    initWorker();
+  }
+}
+
+async function doLogout(){
+  currentUser = null;
+  clearInterval(pollInterval);
+  clearInterval(clockInterval);
+  clearInterval(adminPollInterval);
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  await sb.auth.signOut();
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginInput').value='';
+  document.getElementById('passInput').value='';
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('userTopbar').style.display='none';
+  document.getElementById('adminPanel').style.display='none';
+}
+
+/* Загружает все профили сотрудников из БД и кэширует в USERS (ключ — login без @internal.lab) */
+async function loadProfilesFromDb(){
+  const { data, error } = await sb.from('profiles').select('*');
+  if(error || !data) return USERS;
+  const map = {};
+  data.forEach(p=>{
+    // login восстанавливаем из имени для отображения; реальный ключ для входа — email в auth.users,
+    // но в интерфейсе оперируем читаемым login на основе name (это используется для отображения списков)
+    map[p.id] = {
+      name: p.name, role: p.role, initials: p.initials || makeInitials(p.name),
+      isAdmin: p.is_admin, schedule: p.schedule, vacFrom: p.vacation_from, vacTo: p.vacation_to,
+      id: p.id,
+    };
+  });
+  USERS = map;
+  return USERS;
+}
+
+/* ─── DB HELPERS: ORDERS ─── */
+
+/* Преобразует строку из таблицы orders (snake_case) в формат, который использует JS-логика дашборда */
+function dbRowToOrder(r){
+  return {
+    id: r.id, masterId: r.master_id, type: r.type, cat: r.cat, patient: r.patient,
+    sup: r.sup, qty: r.qty, arrived: r.arrived, urgent: r.urgent, isReprint: r.is_reprint,
+    deadline: r.deadline, comment: r.comment||'',
+    file: r.file_name ? {name:r.file_name, size:r.file_size, attached:r.file_attached} : null,
+    worker: r.worker ? (USERS[r.worker] ? USERS[r.worker].name : r.worker) : null,
+    workerId: r.worker,
+    stage: r.stage, takenAt: r.taken_at ? new Date(r.taken_at).getTime() : null,
+    currentStageStart: r.current_stage_start ? new Date(r.current_stage_start).getTime() : null,
+    stageTimings: r.stage_timings || [], duration: r.duration,
+    finishedAt: r.finished_at_text, finishedAtTs: r.finished_at ? new Date(r.finished_at).getTime() : null,
+    finishedAsAssemblyReady: r.finished_assembly_ready,
+    delegatedFrom: r.delegated_from, delegatedTo: r.delegated_to,
+    delegHistory: r.deleg_history, _isAssembly: r.is_assembly,
+  };
+}
+
+/* Преобразует JS-объект подзаказа обратно в строку для записи в БД */
+function orderToDbRow(o){
+  return {
+    id: o.id, master_id: o.masterId, type: o.type, cat: o.cat, patient: o.patient,
+    sup: o.sup, qty: o.qty, arrived: o.arrived, urgent: !!o.urgent, is_reprint: !!o.isReprint,
+    deadline: o.deadline || null, comment: o.comment || '',
+    file_name: o.file ? o.file.name : null, file_size: o.file ? o.file.size : null,
+    file_attached: o.file ? !!o.file.attached : false,
+    worker: o.workerId || null,
+    stage: o.stage, taken_at: o.takenAt ? new Date(o.takenAt).toISOString() : null,
+    current_stage_start: o.currentStageStart ? new Date(o.currentStageStart).toISOString() : null,
+    stage_timings: o.stageTimings || [], duration: o.duration || null,
+    finished_at_text: o.finishedAt || null,
+    finished_at: o.finishedAtTs ? new Date(o.finishedAtTs).toISOString() : null,
+    finished_assembly_ready: !!o.finishedAsAssemblyReady,
+    delegated_from: o.delegatedFrom || null, delegated_to: o.delegatedTo || null,
+    deleg_history: o.delegHistory || null, is_assembly: !!o._isAssembly,
+  };
+}
+
+async function loadQueueFromStorage(){
+  const { data, error } = await sb.from('orders').select('*').order('created_at', {ascending:false});
+  if(error){ console.warn('loadQueueFromStorage error', error); return null; }
+  return (data||[]).map(dbRowToOrder);
+}
+
+/* Точечное обновление/создание ОДНОЙ строки — без read-modify-write всего массива.
+   База сама разруливает конфликты через RLS (нельзя перехватить чужой worker). */
+async function upsertOrderToDb(o){
+  const row = orderToDbRow(o);
+  const { error } = await sb.from('orders').upsert(row, { onConflict: 'id' });
+  if(error){ console.warn('upsertOrderToDb error', error); return false; }
+  return true;
+}
+
+async function deleteOrderFromDb(id){
+  const { error } = await sb.from('orders').delete().eq('id', id);
+  if(error){ console.warn('deleteOrderFromDb error', error); return false; }
+  return true;
+}
+
+/* Атомарное "взятие" подзаказа: UPDATE сработает только если worker сейчас IS NULL —
+   это и есть настоящая защита от гонки на уровне базы данных. Если кто-то опередил,
+   запрос вернёт 0 затронутых строк, и мы сразу об этом узнаем. */
+async function tryTakeOrderInDb(id, workerId, extra){
+  const { data, error } = await sb
+    .from('orders')
+    .update({ worker: workerId, ...extra })
+    .eq('id', id)
+    .is('worker', null)
+    .select();
+  if(error){ console.warn('tryTakeOrderInDb error', error); return false; }
+  return data && data.length > 0; // true если реально обновили (значит успели первыми)
+}
+
+/* ─── DB HELPERS: RETURNS ─── */
+function dbRowToReturn(r){
+  return {
+    id: r.order_id, masterId: r.master_id, type: r.type, patient: r.patient,
+    returnedBy: r.returned_by, reason: r.reason, comment: r.comment||'',
+    returnedAt: r.returned_at_text, resolved: r.resolved, resolvedAt: r.resolved_at_text,
+    _dbId: r.id,
+  };
+}
+async function loadReturnsFromStorage(){
+  const { data, error } = await sb.from('returns').select('*').order('created_at', {ascending:false});
+  if(error){ console.warn('loadReturnsFromStorage error', error); return null; }
+  return (data||[]).map(dbRowToReturn);
+}
+async function insertReturnToDb(rec){
+  const { error } = await sb.from('returns').insert({
+    order_id: rec.id, master_id: rec.masterId, type: rec.type, patient: rec.patient,
+    returned_by: rec.returnedBy, reason: rec.reason, comment: rec.comment,
+    returned_at_text: rec.returnedAt,
+  });
+  if(error) console.warn('insertReturnToDb error', error);
+}
+async function markReturnResolvedInDb(dbId){
+  const { error } = await sb.from('returns')
+    .update({ resolved:true, resolved_at_text: nowTime() })
+    .eq('id', dbId);
+  if(error) console.warn('markReturnResolvedInDb error', error);
+}
+
+/* ─── RETURN TO SUPPLIER ─── */
+let returnTargetId = null;
+
+function openReturnModal(id){
+  returnTargetId = id;
+  document.getElementById('returnOrderId').textContent = id;
+  document.getElementById('returnReason').value = 'Отсутствие .stl файла на печать';
+  document.getElementById('returnComment').value = '';
+  document.getElementById('returnOverlay').classList.add('open');
+}
+function closeReturnModal(){
+  document.getElementById('returnOverlay').classList.remove('open');
+  returnTargetId = null;
+}
+async function confirmReturn(){
+  if(!returnTargetId) return;
+  const idx = myWork.findIndex(x=>x.id===returnTargetId);
+  if(idx===-1){ closeReturnModal(); return; }
+  const o = myWork[idx];
+  const reason = document.getElementById('returnReason').value;
+  const comment = document.getElementById('returnComment').value.trim();
+
+  const returnRecord = {
+    id: o.id, masterId: o.masterId, type: o.type, patient: o.patient,
+    returnedBy: currentUser ? currentUser.name : 'Сотрудник',
+    reason, comment, returnedAt: nowTime(),
+  };
+  await insertReturnToDb(returnRecord);
+
+  // Убираем подзаказ из работы сотрудника и удаляем из общей таблицы orders
+  myWork.splice(idx,1);
+  await deleteOrderFromDb(o.id);
+
+  closeReturnModal();
+  closeOrder();
+  renderWork();
+  showToast('↩ Подзаказ '+o.id+' возвращён поставщику: '+reason);
+}
+
+function renderReturnsPanel(){
+  const tbody = document.getElementById('returnsBody');
+  if(!tbody) return;
+  loadReturnsFromStorage().then(returns=>{
+    returns = returns || [];
+    const rows = returns.map((r)=>{
+      const isResolved = !!r.resolved;
+      const tc = isResolved ? 'var(--text)' : '#791f1f';
+      const tc2 = isResolved ? 'var(--text2)' : '#791f1f';
+      const rowBg = isResolved ? 'var(--surface2)' : 'transparent';
+      const statusCell = isResolved
+        ? `<span class="badge b-green" style="font-size:10px">✓ Решено</span>`
+        : `<button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #2c6e1f;background:#eaf6e3;color:#2c6e1f;cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>`;
+      return `<tr style="border-bottom:1px solid #f3c9c5;background:${rowBg}">
+        <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${tc}">${r.id}</td>
+        <td style="padding:7px 10px;font-size:11px"><span style="background:#fff;border:1px solid #f3c9c5;color:${tc};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${r.type}</span></td>
+        <td style="padding:7px 10px;font-size:11px;color:${tc2}">${r.patient}</td>
+        <td style="padding:7px 10px;font-size:11px;color:${tc2};font-weight:600">${r.returnedBy}</td>
+        <td style="padding:7px 10px;font-size:11px;color:${tc2}">${r.reason}${r.comment?' — '+r.comment:''}</td>
+        <td style="padding:7px 10px;font-size:11px;color:#a8788c">${r.returnedAt}</td>
+        <td style="padding:7px 10px">${statusCell}</td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows || '<tr><td colspan="7" style="padding:16px;text-align:center;color:#c79a9a;font-size:12px">Возвратов нет</td></tr>';
+    const badge = document.getElementById('returnsNewBadge');
+    const unresolvedCount = returns.filter(r=>!r.resolved).length;
+    if(badge) badge.style.display = unresolvedCount ? 'inline-block' : 'none';
+  });
+}
+
+async function resolveReturn(dbId){
+  await markReturnResolvedInDb(dbId);
+  renderReturnsPanel();
+  showToast('✓ Возврат отмечен как решённый');
+}
+
+/* ─── ADMIN TABS ─── */
+function adminShowTab(tab){
+  const orders = document.getElementById('adminTabOrders');
+  const users  = document.getElementById('adminTabUsers');
+  const btnO = document.getElementById('atab-orders');
+  const btnU = document.getElementById('atab-users');
+  if(tab==='orders'){
+    orders.style.display='flex'; users.style.display='none';
+    btnO.style.background='#2a3a4c'; btnO.style.color='#fff';
+    btnU.style.background='transparent'; btnU.style.color='#a8b2bc';
+  } else {
+    orders.style.display='none'; users.style.display='flex';
+    btnU.style.background='#2a3a4c'; btnU.style.color='#fff';
+    btnO.style.background='transparent'; btnO.style.color='#a8b2bc';
+    renderUsersTable();
+  }
+}
+
+/* ─── USERS CRUD (через Supabase Auth + profiles) ─── */
+let editingUserId = null;
+
+function openUserModal(userId){
+  editingUserId = userId;
+  const modalTitle = document.getElementById('userModalTitle');
+  if(userId){
+    const u = USERS[userId];
+    modalTitle.textContent = 'Редактировать сотрудника';
+    document.getElementById('uLogin').value = u.name; // показываем имя, логин/email не меняем при редактировании
+    document.getElementById('uLogin').disabled = true;
+    document.getElementById('uName').value = u.name;
+    document.getElementById('uRole').value = u.role;
+    document.getElementById('uPassword').value = '';
+    document.getElementById('uPassword').placeholder = 'оставьте пустым, чтобы не менять';
+    document.getElementById('uSchedule').value = u.schedule||'';
+    document.getElementById('uVacFrom').value = u.vacFrom||'';
+    document.getElementById('uVacTo').value = u.vacTo||'';
+  } else {
+    modalTitle.textContent = 'Добавить сотрудника';
+    document.getElementById('uLogin').value = '';
+    document.getElementById('uLogin').disabled = false;
+    document.getElementById('uName').value = '';
+    document.getElementById('uRole').value = 'Оператор печати';
+    document.getElementById('uPassword').value = generateTempPassword();
+    document.getElementById('uPassword').placeholder = '';
+    document.getElementById('uSchedule').value = '08:00 – 20:00';
+    document.getElementById('uVacFrom').value = '';
+    document.getElementById('uVacTo').value = '';
+  }
+  document.getElementById('userOverlay').classList.add('open');
+}
+function closeUserModal(){
+  document.getElementById('userOverlay').classList.remove('open');
+  editingUserId = null;
+}
+function generateTempPassword(){
+  // Простой читаемый временный пароль для сообщения новому сотруднику лично
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let p = '';
+  for(let i=0;i<8;i++) p += chars[Math.floor(Math.random()*chars.length)];
+  return p;
+}
+
+async function saveUser(){
+  const loginField = document.getElementById('uLogin').value.trim();
+  const name  = document.getElementById('uName').value.trim();
+  const role  = document.getElementById('uRole').value;
+  const password = document.getElementById('uPassword').value.trim();
+  const schedule = document.getElementById('uSchedule').value.trim();
+  const vacFrom = document.getElementById('uVacFrom').value || null;
+  const vacTo   = document.getElementById('uVacTo').value || null;
+
+  if(!name){ alert('Укажите ФИО'); return; }
+
+  if(editingUserId){
+    // Редактирование существующего — обновляем только profiles, пароль через отдельный сброс (см. ниже)
+    const { error } = await sb.from('profiles').update({
+      name, role, schedule, vacation_from: vacFrom, vacation_to: vacTo,
+      is_admin: role==='Администратор', initials: makeInitials(name),
+    }).eq('id', editingUserId);
+    if(error){ alert('Ошибка сохранения: '+error.message); return; }
+    closeUserModal();
+    await loadProfilesFromDb();
+    renderUsersTable();
+    showToast('💾 Сотрудник «'+name+'» сохранён');
+  } else {
+    // Создание нового — регистрируем через Supabase Auth (login -> внутренний email)
+    if(!loginField){ alert('Укажите логин (латиницей)'); return; }
+    if(!password || password.length<6){ alert('Пароль должен быть не короче 6 символов'); return; }
+    const email = loginToEmail(loginField);
+    const { data, error } = await sb.auth.signUp({
+      email, password,
+      options: { data: { name, role, is_admin: role==='Администратор' } }
+    });
+    if(error){ alert('Ошибка создания сотрудника: '+error.message); return; }
+    // Триггер handle_new_user() в БД сам создаст запись profiles с этими метаданными.
+    // Дозаполняем график/отпуск отдельным UPDATE (метаданные не покрывают эти поля).
+    if(data.user){
+      await sb.from('profiles').update({
+        schedule, vacation_from: vacFrom, vacation_to: vacTo, initials: makeInitials(name),
+      }).eq('id', data.user.id);
+    }
+    closeUserModal();
+    await loadProfilesFromDb();
+    renderUsersTable();
+    showToast('✅ Сотрудник «'+name+'» создан. Логин: '+loginField+', пароль: '+password+' — сообщите лично.');
+  }
+}
+
+async function deleteUserConfirm(userId){
+  const u = USERS[userId];
+  if(!u) return;
+  if(u.isAdmin && Object.values(USERS).filter(x=>x.isAdmin).length<=1){
+    alert('Нельзя удалить единственного администратора');
+    return;
+  }
+  const ok = await showConfirm('Удалить сотрудника «'+u.name+'»? Это действие необратимо.', '🗑 Удалить сотрудника?');
+  if(!ok) return;
+  // Удаление из auth.users требует admin-прав (service_role) — недоступно из браузера.
+  // Поэтому помечаем профиль как деактивированный (роль "Уволен"), а не удаляем физически.
+  const { error } = await sb.from('profiles').update({ role: 'Уволен', is_admin:false }).eq('id', userId);
+  if(error){ alert('Ошибка: '+error.message); return; }
+  await loadProfilesFromDb();
+  renderUsersTable();
+  showToast('🗑 Сотрудник «'+u.name+'» деактивирован (роль «Уволен»)');
+}
+
+function renderUsersTable(){
+  const tbody = document.getElementById('usersBody');
+  if(!tbody) return;
+  loadProfilesFromDb().then(()=>{
+    const active = Object.entries(USERS).filter(([id,u])=>u.role!=='Уволен');
+    const rows = active.map(([id,u])=>{
+      const onVacToday = isOnVacation(u.name, new Date());
+      const vacStr = (u.vacFrom && u.vacTo) ? (fmtDeadline(u.vacFrom)+' – '+fmtDeadline(u.vacTo)) : '—';
+      const vacBadge = onVacToday ? ' <span class="badge b-amber" style="font-size:9px">сейчас в отпуске</span>' : '';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 10px;font-size:12px;font-weight:700;color:var(--text)">${u.name}</td>
+        <td style="padding:8px 10px;font-size:12px;color:var(--text)">${u.name}</td>
+        <td style="padding:8px 10px;font-size:11px;color:var(--text2)">${u.role}</td>
+        <td style="padding:8px 10px;font-size:11px;color:var(--text2)">${u.schedule||'—'}</td>
+        <td style="padding:8px 10px;font-size:11px;color:var(--text2)">${vacStr}${vacBadge}</td>
+        <td style="padding:8px 10px;display:flex;gap:6px">
+          <button onclick="openUserModal('${id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600">✎ Изменить</button>
+          <button onclick="deleteUserConfirm('${id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #ed6a5e;background:#fde6e4;color:#b3372c;cursor:pointer;font-family:inherit;font-weight:600">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows || '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text3);font-size:12px">Нет сотрудников</td></tr>';
+  });
+}
+
+/* ─── WORKER INIT ─── */
+async function initWorker(){
+  // Обновляем карточку сотрудника
+  document.getElementById('empAv').textContent   = currentUser.initials;
+  document.getElementById('empName').textContent  = currentUser.name;
+  document.getElementById('empRole').textContent  = currentUser.role;
+  document.getElementById('utName').textContent   = currentUser.name;
+  document.getElementById('utRole').textContent   = currentUser.role;
+  document.getElementById('userTopbar').style.display = 'flex';
+  document.getElementById('appShell').style.display   = 'grid';
+
+  // Подменяем CURRENT_USER
+  window.CURRENT_USER_NAME = currentUser.name;
+
+  await loadProfilesFromDb();
+
+  // Загружаем актуальное состояние из БД и распределяем по локальным массивам
+  await reconcileFromDb();
+
+  // Восстанавливаем тему и вид
+  try{ applyTheme(localStorage.getItem('theme')||'light'); } catch(e){}
+  currentView = localStorage.getItem('viewMode')||'table';
+  renderCounters();
+  renderWork();
+  setInterval(renderCounters, 60000);
+  initBell();
+  startTopbarClock();
+
+  // Realtime подписка — мгновенные обновления вместо polling каждые N секунд
+  subscribeToOrdersRealtime();
+}
+
+/* Полностью перестраивает queue/myWork из актуального состояния БД для текущего пользователя.
+   Завершённые подзаказы (done) не трогаем — это локальная история сессии. */
+async function reconcileFromDb(){
+  const stored = await loadQueueFromStorage();
+  if(!stored) return;
+
+  const doneIds = new Set(done.map(o=>o.id));
+  const newQueue = [];
+  const newMyWork = [];
+
+  stored.forEach(o=>{
+    if(doneIds.has(o.id)) return; // уже в личной истории завершённых — не трогаем
+    if(o.finishedAt){
+      // Подзаказ завершён в БД, но не нашим действием в этой сессии — пропускаем,
+      // не подмешиваем чужую историю
+      return;
+    }
+    if(o.worker && o.worker===currentUser.name){
+      if(o.delegatedFrom === o.worker) o.delegatedFrom = null; // защита от старых битых записей
+      newMyWork.push(o);
+    } else if(!o.worker && (!o.delegatedTo || o.delegatedTo===currentUser.id)){
+      newQueue.push(o);
+    }
+    // занят кем-то другим — не показываем нигде
+  });
+
+  queue = newQueue;
+  myWork = newMyWork;
+}
+
+/* ─── TOPBAR CLOCK ─── */
+function startTopbarClock(){
+  if(clockInterval) clearInterval(clockInterval);
+  function tick(){
+    const now = new Date();
+    const dateEl = document.getElementById('utDate');
+    const timeEl = document.getElementById('utTime');
+    if(dateEl) dateEl.textContent = now.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+    if(timeEl) timeEl.textContent = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  tick();
+  clockInterval = setInterval(tick, 1000);
+}
+
+/* Realtime: подписываемся на изменения таблицы orders. Срабатывает мгновенно у ВСЕХ
+   открытых клиентов при любом INSERT/UPDATE/DELETE — это и заменяет polling. */
+function subscribeToOrdersRealtime(){
+  if(realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb
+    .channel('orders-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload)=>{
+      handleRealtimeOrderChange(payload);
+    })
+    .subscribe();
+}
+
+async function handleRealtimeOrderChange(payload){
+  if(!currentUser) return;
+
+  if(currentUser.isAdmin){
+    // У администратора просто перечитываем всё и перерисовываем
+    await adminRefreshData();
+    return;
+  }
+
+  // У сотрудника: реагируем точечно на изменившуюся строку
+  if(payload.eventType === 'DELETE'){
+    const id = payload.old.id;
+    queue = queue.filter(o=>o.id!==id);
+    myWork = myWork.filter(o=>o.id!==id);
+    renderWork();
+    return;
+  }
+
+  const o = dbRowToOrder(payload.new);
+  const inMyWork = myWork.findIndex(x=>x.id===o.id);
+  const inQueue = queue.findIndex(x=>x.id===o.id);
+
+  if(o.finishedAt){
+    // Завершился — если был у меня в работе локально, не трогаем (моя локальная история done),
+    // иначе просто убираем отовсюду как неактуальный для отображения
+    if(inMyWork===-1) { queue = queue.filter(x=>x.id!==o.id); renderWork(); }
+    return;
+  }
+
+  if(o.worker && o.worker===currentUser.name){
+    // Мой подзаказ — обновляем на месте или добавляем (например, делегировали мне и я уже взял в другой вкладке)
+    if(inMyWork>=0) myWork[inMyWork] = o; else myWork.push(o);
+    queue = queue.filter(x=>x.id!==o.id);
+  } else if(!o.worker && (!o.delegatedTo || o.delegatedTo===currentUser.id)){
+    // Свободен либо адресован мне — в очередь
+    if(inQueue>=0) queue[inQueue] = o; else queue.unshift(o);
+    if(inMyWork>=0 && o.worker!==currentUser.name){
+      // Был у меня, но в БД сейчас свободен (например, кто-то его удалил/сбросил) — убираем из работы
+      myWork.splice(inMyWork,1);
+    }
+    if(inQueue===-1 && o.delegatedTo===currentUser.id && o.delegatedFrom){
+      showToast('↪ Вам делегирован подзаказ '+o.id+' от '+o.delegatedFrom, 6000);
+    } else if(inQueue===-1){
+      showToast('📥 Новый заказ — подзаказ '+o.id+' в очереди');
+    }
+  } else {
+    // Занят/адресован другому — если был у меня локально, значит я проиграл гонку взятия
+    if(inMyWork>=0){
+      myWork.splice(inMyWork,1);
+      showToast('⚠ Подзаказ '+o.id+' оказался занят сотрудником '+o.worker+' — убран из вашей работы', 6000);
+    }
+    queue = queue.filter(x=>x.id!==o.id);
+  }
+  renderWork();
+}
+
+function showToast(msg, dur=4000){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+/* ─── ADMIN INIT ─── */
+async function initAdmin(){
+  document.getElementById('adminPanel').style.display = 'flex';
+  await loadProfilesFromDb();
+  const stored = await loadQueueFromStorage();
+  adminOrders = stored || []; // PRIMARY KEY в БД гарантирует отсутствие дублей
+  renderAdminQueue();
+  renderReturnsPanel();
+  // Добавляем первую пустую строку изделия
+  addOrderItem();
+  // Realtime вместо polling — мгновенные обновления при действиях сотрудников
+  subscribeToOrdersRealtime();
+}
+async function adminRefreshData(){
+  const stored = await loadQueueFromStorage();
+  if(stored){
+    adminOrders = stored;
+    renderAdminQueue();
+  }
+  renderReturnsPanel();
+}
+
+let adminOrders = [];
+let adminCounter = 1139;
+
+const MAT_CFG_CATS = {
+  'Элайнер':'polymer','Модель (форма)':'polymer','Шаблон':'polymer','Позиционер':'polymer',
+  'Элайнер биосовместимый':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+};
+
+const TYPE_SUFFIX = {
+  'polymer':'П','biocompat':'Б','metal':'М'
+};
+
+/* ─── ADD ITEM ROW ─── */
+function addOrderItem(){
+  const wrap = document.getElementById('aItemsWrap');
+  const idx = wrap.children.length;
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center';
+  row.innerHTML = `
+    <select name="item-type" style="height:32px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit;flex:1">
+      <optgroup label="Полимер">
+        <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
+      </optgroup>
+      <optgroup label="Биосовместимый полимер">
+        <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
+      </optgroup>
+      <optgroup label="Металл">
+        <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+      </optgroup>
+    </select>
+    <input type="number" name="item-qty" value="1" min="1" max="99" style="width:56px;height:32px;padding:0 6px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit" placeholder="шт.">
+    <button onclick="this.parentNode.remove()" style="height:32px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;background:#fff;color:#7a8694;cursor:pointer;font-size:14px;font-family:inherit">✕</button>
+  `;
+  wrap.appendChild(row);
+}
+
+/* ─── AUTO-ASSEMBLY CHECK ─── */
+// Проверяем: все подзаказы мастер-заказа достигли "Сборка заказа"?
+// Если да — создаём задачу "Сборка заказа" в очереди
+const assemblyCreated = new Set(); // masterId уже с созданной сборкой
+
+function checkAutoAssembly(masterId){
+  if(assemblyCreated.has(masterId)) return;
+  // Собираем все подзаказы этого мастер-заказа (исключая саму задачу сборки)
+  const allOrders = [...queue, ...myWork, ...done];
+  const subOrders = allOrders.filter(o=>o.masterId===masterId && o.type!=='Сборка заказа' && !o._isAssembly);
+  if(!subOrders.length) return;
+
+  // Все подзаказы должны быть ЗАВЕРШЕНЫ (finishedAt) и готовы к сборке —
+  // работает одинаково и для одноматериального заказа (1 подзаказ),
+  // и для составного (несколько подзаказов разных материалов)
+  const allReady = subOrders.every(o=>!!o.finishedAt && o.finishedAsAssemblyReady);
+  if(!allReady) return;
+
+  assemblyCreated.add(masterId);
+  const ref = subOrders[0];
+  const types = new Set(subOrders.map(o=>o.type));
+  const now = new Date();
+  const arrived = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const assemblyOrder = {
+    id: masterId+'-СБ',
+    masterId,
+    type: 'Сборка заказа',
+    cat: 'assembly',
+    patient: ref.patient,
+    sup: ref.sup,
+    qty: 1,
+    arrived,
+    worker: null,
+    stage: -1,
+    urgent: subOrders.some(o=>o.urgent),
+    deadline: ref.deadline,
+    comment: 'Автоматически создана — подзаказ(ы) заказа №'+masterId+' готовы к сборке ('+[...types].join(', ')+').',
+    file: null,
+    delegatedFrom: null,
+    _isAssembly: true,
+  };
+  queue.unshift(assemblyOrder);
+  renderWork();
+  showToast('📦 Заказ №'+masterId+' — подзаказ(ы) готовы, создана задача «Сборка заказа»', 6000);
+  upsertOrderToDb(assemblyOrder); // сразу синхронизируем — иначе админ не увидит новую задачу
+}
+
+async function adminPostOrder(){
+  const btn = document.querySelector('.btn-post');
+  if(btn && btn.disabled) return; // защита от повторного клика
+  if(btn) btn.disabled = true;
+
+  try{
+    await adminPostOrderInner();
+  } finally {
+    if(btn) setTimeout(()=>{ btn.disabled = false; }, 600);
+  }
+}
+
+async function adminPostOrderInner(){
+  const masterId = document.getElementById('aId').value.trim() || String(adminCounter++);
+  const patient  = document.getElementById('aPatient').value.trim();
+  const sup      = document.getElementById('aSup').value;
+  const deadline = document.getElementById('aDeadline').value||null;
+  const comment  = document.getElementById('aComment').value.trim();
+  const statusVal = document.getElementById('aStatus').value; // normal | urgent | reprint
+  const urgent    = statusVal === 'urgent';
+  const isReprint = statusVal === 'reprint';
+
+  if(!patient){ alert('Укажите ФИО пациента'); return; }
+
+  // Собираем строки изделий — только прямые дочерние div (каждая = одна строка изделия)
+  const wrap = document.getElementById('aItemsWrap');
+  const rows = Array.from(wrap.children).filter(el=>el.tagName==='DIV' && el.querySelector('[name=item-type]'));
+  if(!rows.length){ alert('Добавьте хотя бы одно изделие'); return; }
+
+  // Прикреплённый файл (опционально, один файл на весь заказ)
+  const fileInput = document.getElementById('aFile');
+  let attachedFile = null;
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    const f = fileInput.files[0];
+    const sizeKb = f.size/1024;
+    const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
+    attachedFile = { name:f.name, size:sizeStr, attached:true };
+  }
+
+  const now = new Date();
+  const arrived = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const created = [];
+  const usedSuffixes = {};
+
+  rows.forEach(row=>{
+    const type = row.querySelector('[name=item-type]').value;
+    const qty  = parseInt(row.querySelector('[name=item-qty]').value)||1;
+    const cat  = MAT_CFG_CATS[type]||'polymer';
+    const suf  = TYPE_SUFFIX[cat]||'П';
+    usedSuffixes[suf] = (usedSuffixes[suf]||0)+1;
+    const id = masterId+'-'+suf+(usedSuffixes[suf]>1?usedSuffixes[suf]:'');
+    const order = {id, masterId, type, cat, patient, sup, qty, arrived,
+      worker:null, stage:-1, urgent, deadline, comment, isReprint,
+      file: attachedFile || {name: (masterId+'_'+type.toLowerCase().replace(/[^а-яa-z0-9]/gi,'_'))+'.stl', size:'—'},
+      delegatedFrom:null, _createdAt: Date.now()};
+    created.push(order);
+  });
+
+  adminOrders.unshift(...created);
+  // Вставляем все подзаказы заказа одним батчем напрямую в БД
+  const { error } = await sb.from('orders').insert(created.map(orderToDbRow));
+  if(error){ alert('Ошибка размещения заказа: '+error.message); return; }
+
+  // Очищаем форму
+  document.getElementById('aId').value='';
+  document.getElementById('aPatient').value='';
+  document.getElementById('aComment').value='';
+  document.getElementById('aStatus').value='normal';
+  document.getElementById('aDeadline').value='';
+  document.getElementById('aItemsWrap').innerHTML='';
+  if(document.getElementById('aFile')) document.getElementById('aFile').value='';
+  adminCounter++;
+
+  renderAdminQueue();
+  showToast('✅ Заказ №'+masterId+' размещён ('+created.length+' подзаказ(ов))');
+}
+
+function renderAdminQueue(){
+  // Размещённые — никто не взял в работу
+  const placed = adminOrders.filter(o=>!o.worker);
+  // Для каждого masterId проверяем — есть ли уже ЗАВЕРШЁННАЯ задача "Сборка заказа"
+  const assemblyDoneMasterIds = new Set(
+    adminOrders.filter(o=>o._isAssembly && o.finishedAt).map(o=>o.masterId)
+  );
+  // В работе — взят, но ещё не передан в ОТК (включая подзаказы готовые к сборке/находящиеся в сборке)
+  const inProgress = adminOrders.filter(o=>o.worker && !o.finishedAt);
+  // Выполненные — реально завершены (finishedAt) И это либо финальный этап с передачей в ОТК
+  // (одноматериальный заказ без отдельной сборки), либо сама задача "Сборка заказа" завершена,
+  // либо подзаказ ждал сборки, но сборка его заказа уже завершена (значит и подзаказ фактически закрыт)
+  const completed = adminOrders.filter(o=>
+    o.worker && o.finishedAt && (
+      o._isAssembly ||
+      !o.finishedAsAssemblyReady ||
+      assemblyDoneMasterIds.has(o.masterId)
+    )
+  );
+  // Подзаказ завершён, ждёт сборки, но задача сборки его заказа ЕЩЁ не завершена — реально "в работе"
+  const waitingAssembly = adminOrders.filter(o=>
+    o.worker && o.finishedAt && o.finishedAsAssemblyReady &&
+    !o._isAssembly && !assemblyDoneMasterIds.has(o.masterId)
+  );
+
+  renderAdminOrderTable('adminPlacedBody', placed, 'placed');
+  renderAdminOrderTable('adminProgressBody', [...inProgress, ...waitingAssembly], 'progress');
+  renderAdminOrderTable('adminCompletedBody', completed, 'completed');
+
+  const cP=document.getElementById('adminPlacedCount'); if(cP) cP.textContent=placed.length;
+  const cR=document.getElementById('adminProgressCount'); if(cR) cR.textContent=(inProgress.length+waitingAssembly.length);
+  const cC=document.getElementById('adminCompletedCount'); if(cC) cC.textContent=completed.length;
+}
+
+function renderAdminOrderTable(tbodyId, list, mode){
+  const tbody = document.getElementById(tbodyId);
+  if(!tbody) return;
+  const rows = list.map(o=>{
+    const workerBadge = o.worker
+      ? `<span style="font-size:10px;color:#2c6e1f;font-weight:700">${o.worker}</span>`
+      : `<span style="font-size:10px;color:#9a6400">в очереди</span>`;
+    const urgBadge = o.urgent ? ' <span style="background:#fde6e4;color:#b3372c;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">СРОЧНО</span>' : '';
+    const reprintBadge = o.isReprint ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ПЕРЕПЕЧАТКА</span>' : '';
+    const assemblyBadge = o._isAssembly ? ' <span style="background:#eaf6e3;color:#2c6e1f;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">СБОРКА</span>' : '';
+    const waitBadge = (o.finishedAt && o.finishedAsAssemblyReady && !o._isAssembly) ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ЖДЁТ СБОРКИ</span>' : '';
+    const fileBadge = o.file && o.file.attached ? `<span title="${o.file.name}" style="font-size:11px">📎</span>` : '';
+    const stageInfo = mode==='placed' ? '—' : (o.finishedAt ? '✓ завершён' : (st(o)[o.stage] || '—'));
+    const delegInfo = o.delegatedFrom ? `<span style="color:#5b4a9e;font-weight:700">↪ Делегирован от ${o.delegatedFrom}</span>` : '';
+    const detailBtn = `<button onclick="event.stopPropagation();openAdminDetail('${o.id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">👁 Карточка</button>`;
+    const deleteBtn = `<button onclick="event.stopPropagation();adminDeleteOrder('${o.id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #ed6a5e;background:#fde6e4;color:#b3372c;cursor:pointer;font-family:inherit;font-weight:600">✕ Удалить</button>`;
+    const delBtn = mode==='placed'
+      ? deleteBtn
+      : `<div style="display:flex;gap:5px">${detailBtn}${deleteBtn}</div>`;
+    return `<tr style="border-bottom:1px solid #eef1f3;cursor:pointer" onclick="openAdminDetail('${o.id}')">
+      <td style="padding:7px 10px;font-size:12px;font-weight:700">${o.id}${urgBadge}${reprintBadge}${assemblyBadge}${waitBadge}</td>
+      <td style="padding:7px 10px;font-size:11px"><span style="background:${o.cat==='polymer'?'#e8f3fc':o.cat==='assembly'?'#eaf6e3':'#fdf3df'};color:${o.cat==='polymer'?'#0c447c':o.cat==='assembly'?'#2c6e1f':'#633806'};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.type}</span></td>
+      <td style="padding:7px 10px;font-size:11px;color:#5a6470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
+      <td style="padding:7px 10px;font-size:11px"><span style="background:#eef1f3;color:#5a6470;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.sup}</span></td>
+      <td style="padding:7px 10px;font-size:12px">${o.qty} шт.</td>
+      <td style="padding:7px 10px">${workerBadge}</td>
+      ${mode!=='placed' ? `<td style="padding:7px 10px;font-size:11px;color:#1b6fb8;font-weight:600">${delegInfo || stageInfo}${delegInfo && !o.finishedAt ? `<div style="font-size:10px;color:#1b6fb8;font-weight:400;margin-top:2px">${stageInfo}</div>` : ''}</td>` : `<td style="padding:7px 10px;text-align:center">${fileBadge}</td>`}
+      <td style="padding:7px 10px;font-size:11px;color:#a8b2bc">${o.arrived}</td>
+      <td style="padding:7px 10px">${delBtn}</td>
+    </tr>`;
+  }).join('');
+  tbody.innerHTML = rows || '<tr><td colspan="9" style="padding:20px;text-align:center;color:#a8b2bc;font-size:12px">Пусто</td></tr>';
+}
+
+/* ─── ADMIN ORDER DETAIL CARD ─── */
+function openAdminDetail(id){
+  const o = adminOrders.find(x=>x.id===id);
+  if(!o) return;
+  const stages = st(o);
+  const c = MAT_CFG[o.type];
+
+  document.getElementById('adminDetailTitle').textContent = 'Заказ № '+o.masterId+' · подзаказ '+o.id;
+
+  document.getElementById('adminDetailInfo').innerHTML = `
+    <div class="ii"><div class="ik">Пациент</div><div class="iv">${o.patient}</div></div>
+    <div class="ii"><div class="ik">Изделие</div><div class="iv">${o.type} × ${o.qty} шт.</div></div>
+    <div class="ii"><div class="ik">Источник</div><div class="iv">${o.sup}</div></div>
+    <div class="ii"><div class="ik">Поступил</div><div class="iv">${o.arrived}</div></div>
+    <div class="ii"><div class="ik">Исполнитель</div><div class="iv">${o.worker || '— не взят —'}</div></div>
+    <div class="ii"><div class="ik">Текущий статус</div><div class="iv">${o.finishedAt ? '✓ завершён' : (o.worker ? (stages[o.stage]||'—') : 'в очереди')}</div></div>`;
+
+  const statusHtml = [];
+  if(o.urgent) statusHtml.push('<span class="badge b-urgent">🔥 Срочно</span>');
+  if(o.isReprint) statusHtml.push('<span class="badge" style="background:#ed6a5e;color:#fff">⚡ Перепечатка</span>');
+  if(o.deadline) statusHtml.push(`<span class="badge b-deadline">⏳ до ${fmtDeadline(o.deadline)}</span>`);
+  if(o.delegatedFrom) statusHtml.push(`<span class="badge b-deleg">↪ делегирован от ${o.delegatedFrom}</span>`);
+  document.getElementById('adminDetailStatusRow').innerHTML = statusHtml.join('');
+
+  // Если заказ был возвращён поставщику — показываем причину (ищем в RETURNS storage)
+  const returnWrap = document.getElementById('adminDetailReturnWrap');
+  returnWrap.innerHTML = '<div style="font-size:11px;color:var(--text3)">Проверка истории возвратов…</div>';
+  loadReturnsFromStorage().then(returns=>{
+    const rec = (returns||[]).find(r=>r.id===o.id);
+    if(rec){
+      const resolvedBadge = rec.resolved ? ' <span class="badge b-green" style="margin-left:6px">✓ Решено</span>' : '';
+      const boxBg = rec.resolved ? 'var(--surface2)' : '#fde6e4';
+      const boxBorder = rec.resolved ? 'var(--border)' : '#f3c9c5';
+      const labelColor = rec.resolved ? 'var(--text2)' : '#b3372c';
+      const textColor = rec.resolved ? 'var(--text2)' : '#791f1f';
+      returnWrap.innerHTML = `
+        <div class="comment-box" style="background:${boxBg};border-color:${boxBorder}">
+          <span class="comment-icon">↩</span>
+          <div>
+            <div class="comment-label" style="color:${labelColor}">Возвращён поставщику сотрудником ${rec.returnedBy} в ${rec.returnedAt}${resolvedBadge}</div>
+            <div class="comment-text" style="color:${textColor}">Причина: ${rec.reason}${rec.comment?' — '+rec.comment:''}</div>
+          </div>
+        </div>`;
+    } else {
+      returnWrap.innerHTML = '';
+    }
+  });
+
+  // Этапы с фактическим временем на каждый
+  const timings = o.stageTimings || [];
+  document.getElementById('adminDetailStages').innerHTML = stages.map((s,i)=>{
+    const t = timings.find(x=>x.stageIndex===i);
+    const isDone = i<o.stage || (o.finishedAt && i<=o.stage);
+    const isCurrent = !o.finishedAt && i===o.stage;
+    const cls = isDone?'s-done':isCurrent?'s-active':'s-future';
+    const nc = isDone?'#65c16f':isCurrent?'#2fc6f6':'#c7cfd6';
+    const ico = isDone?'✓':isCurrent?'▶':'○';
+    const timeStr = t ? t.duration : (isCurrent && o.currentStageStart ? '(в процессе…)' : '—');
+    return `<div class="stage-row ${cls}">
+      <div class="stage-num" style="background:${nc}25;color:${nc}">${ico}</div>
+      <div class="stage-name">${s}</div>
+      <span style="font-size:11px;color:var(--text2);font-weight:600;margin-right:8px">${timeStr}</span>
+      ${isCurrent?'<span class="badge b-blue">сейчас</span>':isDone?'<span class="badge b-green">готово</span>':''}
+    </div>`;
+  }).join('');
+
+  // Общее время
+  let totalHtml = '';
+  if(o.takenAt){
+    const totalMs = (o.finishedAtTs || Date.now()) - o.takenAt;
+    const totalMin = Math.round(totalMs/60000);
+    const h = Math.floor(totalMin/60), m = totalMin%60;
+    const totalStr = h>0 ? (h+'ч '+(m>0?m+'м':'')) : (m+'м');
+    totalHtml = `
+      <div class="ii"><div class="ik">Взят в работу</div><div class="iv">${new Date(o.takenAt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</div></div>
+      <div class="ii"><div class="ik">${o.finishedAt?'Завершён':'В процессе'}</div><div class="iv">${o.finishedAt||'—'}</div></div>
+      <div class="ii"><div class="ik">Общее время</div><div class="iv" style="color:var(--blue)">${totalStr}</div></div>`;
+  } else {
+    totalHtml = '<div class="ii" style="grid-column:1/-1"><div class="ik">Подзаказ ещё не взят в работу</div></div>';
+  }
+  document.getElementById('adminDetailTotalWrap').innerHTML = totalHtml;
+
+  document.getElementById('adminDetailOverlay').classList.add('open');
+}
+function closeAdminDetail(){
+  document.getElementById('adminDetailOverlay').classList.remove('open');
+}
+
+async function adminClearTestData(){
+  const ok = await showConfirm(
+    'Это удалит ВСЕ заказы, подзаказы и историю возвратов из базы данных — у всех сотрудников. Список сотрудников (логины/пароли) не затронется. Действие необратимо.',
+    '🧹 Очистить все тестовые данные?'
+  );
+  if(!ok) return;
+  adminOrders = [];
+  // DELETE без WHERE запрещён PostgREST по умолчанию — используем условие "всегда истина"
+  await sb.from('orders').delete().neq('id', '___never___');
+  await sb.from('returns').delete().neq('id', -1);
+  assemblyCreated.clear();
+  renderAdminQueue();
+  renderReturnsPanel();
+  showToast('🧹 Общая очередь и история возвратов полностью очищены');
+}
+
+async function adminDeleteOrder(id){
+  const ok = await showConfirm('Удалить подзаказ '+id+'? Если он уже в работе у сотрудника, это не отзовёт его локально, но он исчезнет из общего списка.', '🗑 Удалить заказ?');
+  if(!ok) return;
+  adminOrders = adminOrders.filter(o=>o.id!==id);
+  await deleteOrderFromDb(id);
+  renderAdminQueue();
+  showToast('🗑 Подзаказ '+id+' удалён');
+}
+
+/* ─── SYNC TO DB after stage changes (advStage/prevStage/finishOrder/confirmDeleg) ───
+   takeOrder уже синхронизируется атомарно внутри себя (см. tryTakeOrderInDb) —
+   отдельный патч для неё не нужен. RLS-политика orders_update_take_if_free_or_own
+   гарантирует, что эти действия мог выполнить только реальный владелец подзаказа,
+   поэтому здесь конфликтов гонки не бывает — просто пишем актуальное состояние. */
+const _origAdvStage = advStage;
+window.advStage = async function(id){
+  _origAdvStage(id);
+  const o = myWork.find(x=>x.id===id);
+  if(o) await upsertOrderToDb(o);
+};
+const _origPrevStage = prevStage;
+window.prevStage = async function(id){
+  _origPrevStage(id);
+  const o = myWork.find(x=>x.id===id);
+  if(o) await upsertOrderToDb(o);
+};
+const _origFinishOrder = finishOrder;
+window.finishOrder = async function(id){
+  // находим ДО вызова оригинала, т.к. после finishOrder подзаказ уже переедет в done
+  const o = myWork.find(x=>x.id===id);
+  _origFinishOrder(id);
+  if(o) await upsertOrderToDb(o);
+};
+const _origConfirmDeleg = confirmDeleg;
+window.confirmDeleg = async function(targetEmp){
+  const o = myWork.find(x=>x.id===delegTargetId); // находим ДО вызова, подзаказ уедет из myWork
+  _origConfirmDeleg(targetEmp);
+  if(o && o.delegatedFrom) await upsertOrderToDb(o); // синхронизируем только если делегирование реально прошло
+};
+
+/* ─── INIT ─── */
+// Применяем сохранённую тему сразу при загрузке
+try{ applyTheme(localStorage.getItem('theme')||'light'); } catch(e){}
+
+// Also re-wire CURRENT_USER references to dynamic getter
+Object.defineProperty(window,'CURRENT_USER',{get:()=>window.CURRENT_USER_NAME||'Алексей'});
+
+/* Проверяем, нет ли уже активной сессии Supabase (например, после обновления страницы) —
+   если есть, восстанавливаем рабочий стол без повторного ввода пароля. */
+(async function initSession(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    if(profile){
+      currentUser = {
+        id: profile.id, login: session.user.email.split('@')[0],
+        name: profile.name, role: profile.role,
+        initials: profile.initials || makeInitials(profile.name),
+        isAdmin: profile.is_admin, schedule: profile.schedule,
+        vacFrom: profile.vacation_from, vacTo: profile.vacation_to,
+      };
+      document.getElementById('loginScreen').classList.add('hidden');
+      if(currentUser.isAdmin) initAdmin(); else initWorker();
+      return;
+    }
+  }
+  document.getElementById('loginScreen').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
