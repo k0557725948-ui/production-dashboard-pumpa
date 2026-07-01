@@ -2181,16 +2181,24 @@ function openOrder(id){
     <button class="btn-ghost" onclick="closeOrder()">Закрыть</button>`;
   document.getElementById('orderOverlay').classList.add('open');
 }
-function downloadFile(id, idx){
+async function downloadFile(id, idx){
   const o=myWork.find(x=>x.id===id);
   const f = o && o.files && o.files[idx||0];
   if(!f) return;
-  const blob=new Blob(['Имитация файла модели для печати: '+f.name+'\nЗаказ № '+o.masterId+' / подзаказ '+o.id+'\n\nЭто демонстрационный placeholder — в реальной системе здесь будет STL/3MF файл модели.'],{type:'text/plain'});
-  const url=URL.createObjectURL(blob);
+  if(!f.path){
+    alert('У этого файла нет сохранённого содержимого (прикреплён до перехода на файловое хранилище). Попросите администратора прикрепить файл заново.');
+    return;
+  }
+  let url;
+  try{
+    url = await getOrderFileUrl(f.path);
+  } catch(e){
+    alert('Не удалось получить файл: '+e.message);
+    return;
+  }
   const a=document.createElement('a');
-  a.href=url; a.download=f.name.replace(/\.stl$/,'.txt');
+  a.href=url; a.download=f.name;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 function advStage(id){
   const o=myWork.find(x=>x.id===id);if(!o)return;
@@ -2653,6 +2661,33 @@ async function loadProfilesFromDb(){
   return USERS;
 }
 
+/* ─── DB HELPERS: FILE STORAGE ─── */
+const ORDER_FILES_BUCKET = 'order-files';
+
+/* Реально загружает файлы модели в приватный Supabase Storage bucket и возвращает
+   массив {name, size, path} для сохранения в orders.files / returns.files (jsonb).
+   Бросает исключение при ошибке — вызывающий код должен прервать размещение заказа. */
+async function uploadOrderFiles(fileList, masterId){
+  const uploaded = [];
+  for(const f of Array.from(fileList)){
+    const safeName = f.name.replace(/[^\w.\-]+/g,'_');
+    const path = masterId+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'_'+safeName;
+    const { error } = await sb.storage.from(ORDER_FILES_BUCKET).upload(path, f);
+    if(error) throw new Error('не удалось загрузить '+f.name+' ('+error.message+')');
+    const sizeKb = f.size/1024;
+    const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
+    uploaded.push({ name: f.name, size: sizeStr, path });
+  }
+  return uploaded;
+}
+
+/* Получает временную ссылку на скачивание реального файла из приватного bucket'а */
+async function getOrderFileUrl(path){
+  const { data, error } = await sb.storage.from(ORDER_FILES_BUCKET).createSignedUrl(path, 300);
+  if(error) throw new Error(error.message);
+  return data.signedUrl;
+}
+
 /* ─── DB HELPERS: ORDERS ─── */
 
 /* Преобразует строку из таблицы orders (snake_case) в формат, который использует JS-логика дашборда */
@@ -2913,11 +2948,12 @@ async function submitEditReturn(){
   const fileInput = document.getElementById('erFile');
   let attachedFiles = r.files || [];
   if(fileInput && fileInput.files && fileInput.files.length){
-    attachedFiles = Array.from(fileInput.files).map(f=>{
-      const sizeKb = f.size/1024;
-      const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
-      return { name:f.name, size:sizeStr };
-    });
+    try{
+      attachedFiles = await uploadOrderFiles(fileInput.files, r.masterId);
+    } catch(e){
+      alert('Ошибка загрузки файлов: '+e.message);
+      return;
+    }
   }
 
   const now = new Date();
@@ -3384,15 +3420,17 @@ async function adminPostOrderInner(){
   const rows = Array.from(wrap.children).filter(el=>el.tagName==='DIV' && el.querySelector('[name=item-type]'));
   if(!rows.length){ alert('Добавьте хотя бы одно изделие'); return; }
 
-  // Прикреплённые файлы (опционально, можно несколько, общие на весь заказ)
+  // Прикреплённые файлы (опционально, можно несколько, общие на весь заказ) —
+  // реально загружаются в Supabase Storage, а не просто запоминаются по имени
   const fileInput = document.getElementById('aFile');
-  const attachedFiles = [];
+  let attachedFiles = [];
   if(fileInput && fileInput.files && fileInput.files.length){
-    Array.from(fileInput.files).forEach(f=>{
-      const sizeKb = f.size/1024;
-      const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
-      attachedFiles.push({ name:f.name, size:sizeStr });
-    });
+    try{
+      attachedFiles = await uploadOrderFiles(fileInput.files, masterId);
+    } catch(e){
+      alert('Ошибка загрузки файлов: '+e.message);
+      return;
+    }
   }
 
   const now = new Date();

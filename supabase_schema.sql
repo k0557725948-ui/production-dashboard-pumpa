@@ -217,7 +217,45 @@ create policy "returns_update_admin_only"
   );
 
 -- ───────────────────────────────────────────────────────────────────
--- 4. АВТОСОЗДАНИЕ ПРОФИЛЯ ПРИ РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ
+-- 4. ФАЙЛОВОЕ ХРАНИЛИЩЕ — реальные загруженные файлы моделей (STL/3MF)
+-- ───────────────────────────────────────────────────────────────────
+-- Приватный bucket (public=false) — файлы заказов могут содержать имена
+-- пациентов, поэтому доступ только через подписанные (временные) ссылки,
+-- а не по прямому публичному URL.
+insert into storage.buckets (id, name, public)
+values ('order-files', 'order-files', false)
+on conflict (id) do nothing;
+
+-- Скачивать (и генерировать подписанные ссылки на скачивание) может любой
+-- авторизованный сотрудник — подзаказ может достаться любому оператору.
+drop policy if exists "order_files_select_authenticated" on storage.objects;
+create policy "order_files_select_authenticated"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'order-files');
+
+-- Загружать файлы может только администратор — только он размещает
+-- и редактирует заказы через панель администратора.
+drop policy if exists "order_files_insert_admin_only" on storage.objects;
+create policy "order_files_insert_admin_only"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'order-files'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_admin = true)
+  );
+
+drop policy if exists "order_files_delete_admin_only" on storage.objects;
+create policy "order_files_delete_admin_only"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'order-files'
+    and exists (select 1 from profiles p where p.id = auth.uid() and p.is_admin = true)
+  );
+
+-- ───────────────────────────────────────────────────────────────────
+-- 5. АВТОСОЗДАНИЕ ПРОФИЛЯ ПРИ РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ
 -- ───────────────────────────────────────────────────────────────────
 -- Когда администратор создаёт нового сотрудника через Supabase Auth API,
 -- этот триггер автоматически создаёт пустую запись в profiles,
@@ -241,7 +279,7 @@ create trigger on_auth_user_created
   for each row execute function handle_new_user();
 
 -- ───────────────────────────────────────────────────────────────────
--- 5. REALTIME — включаем live-обновления для таблиц
+-- 6. REALTIME — включаем live-обновления для таблиц
 -- ───────────────────────────────────────────────────────────────────
 alter publication supabase_realtime add table orders;
 alter publication supabase_realtime add table returns;
