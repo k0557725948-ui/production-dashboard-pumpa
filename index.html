@@ -60,7 +60,6 @@
   [data-theme="dark"] .login-logo h1 { color:var(--text); }
   [data-theme="dark"] .login-field input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
   [data-theme="dark"] .login-field input::placeholder { color:var(--text3); }
-  [data-theme="dark"] .login-hint { color:var(--text3);border-color:var(--border); }
   [data-theme="dark"] .admin-form-wrap { background:var(--surface); }
   [data-theme="dark"] .admin-form-wrap select,
   [data-theme="dark"] .admin-form-wrap input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
@@ -459,7 +458,6 @@
   .login-btn:hover { background:#0d5a9e; }
   .login-error { background:#fde6e4;border:1px solid #ed6a5e;border-radius:6px;padding:9px 12px;font-size:12px;color:#b3372c;margin-top:10px;display:none; }
   .login-error.show { display:block; }
-  .login-hint { margin-top:20px;padding-top:16px;border-top:1px solid #eef1f3;font-size:11px;color:#a8b2bc;text-align:center;line-height:1.6; }
   /* ─── ADMIN PANEL ─── */
   .admin-bar { background:#1a2733;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
   .admin-bar-title { font-size:13px;font-weight:700;color:#2fc6f6;flex:1; }
@@ -537,10 +535,6 @@
     </div>
     <button class="login-btn" onclick="doLogin()">Войти</button>
     <div class="login-error" id="loginError">Неверный логин или пароль</div>
-    <div class="login-hint">
-      Сотрудники: login = имя (Arsen, Alexey…)<br>
-      Администратор: login = Sergey
-    </div>
   </div>
 </div>
 
@@ -1135,7 +1129,7 @@
       <button class="m-close" onclick="closeDeleg()">×</button>
     </div>
     <div class="m-body">
-      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Выберите сотрудника, которому передать подзаказ:</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Выберите сотрудника, которому передать подзаказ, или верните его в общую очередь:</div>
       <div class="deleg-list" id="delegList"></div>
     </div>
     <div class="m-footer">
@@ -1254,6 +1248,11 @@
         <div class="af">
           <label>Кол-во</label>
           <input type="number" id="erQty" value="1" min="1" max="99" style="width:70px">
+        </div>
+        <div class="af">
+          <label>Файл модели</label>
+          <input type="file" id="erFile" style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
+          <div id="erFileHint" style="font-size:10px;color:#7a8694;margin-top:3px"></div>
         </div>
         <div class="af" style="flex:1;min-width:220px">
           <label>Комментарий</label>
@@ -2215,7 +2214,16 @@ function openDeleg(id){
   // Список сотрудников — из актуального динамического USERS, исключая себя и администратора
   const myName = currentUser ? currentUser.name : CURRENT_USER;
   const candidates = Object.values(USERS).filter(u=>u.name!==myName && !u.isAdmin);
-  document.getElementById('delegList').innerHTML = candidates.length ? candidates.map(u=>`
+  const queueOpt = `
+    <button class="deleg-opt" onclick="confirmDelegToQueue()">
+      <div class="deleg-av">📥</div>
+      <div style="flex:1">
+        <div class="deleg-name">Очередь — свободные заказы и подзаказы</div>
+        <div class="deleg-role">Без адресата, доступен любому сотруднику сразу</div>
+      </div>
+      <span style="color:var(--text3)">→</span>
+    </button>`;
+  const empOpts = candidates.length ? candidates.map(u=>`
     <button class="deleg-opt" onclick="confirmDeleg('${u.name}')">
       <div class="deleg-av">${u.initials || makeInitials(u.name)}</div>
       <div style="flex:1">
@@ -2223,7 +2231,8 @@ function openDeleg(id){
         <div class="deleg-role">${u.role}</div>
       </div>
       <span style="color:var(--text3)">→</span>
-    </button>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Нет других сотрудников для делегирования</div>';
+    </button>`).join('') : '';
+  document.getElementById('delegList').innerHTML = queueOpt + empOpts;
   document.getElementById('delegOverlay').classList.add('open');
 }
 function confirmDeleg(targetEmp){
@@ -2259,6 +2268,26 @@ function confirmDeleg(targetEmp){
   closeDeleg();
   closeOrder();
   renderWork();
+}
+function confirmDelegToQueue(){
+  const idx=myWork.findIndex(x=>x.id===delegTargetId);
+  if(idx===-1) return;
+  const o=myWork[idx];
+  // В отличие от адресного делегирования — полностью снимаем адресацию,
+  // подзаказ становится обычным свободным элементом очереди без гейта предпросмотра.
+  o.delegHistory = null;
+  o.delegatedFrom = null;
+  o.delegatedTo = null;
+  o._delegatedToName = null;
+  o.worker = null;
+  o.workerId = null;
+  o.takenAt = null;
+  myWork.splice(idx,1);
+  queue.unshift(o);
+  closeDeleg();
+  closeOrder();
+  renderWork();
+  showToast('📥 Подзаказ '+o.id+' возвращён в общую очередь');
 }
 function closeDeleg(){document.getElementById('delegOverlay').classList.remove('open');delegTargetId=null;}
 
@@ -2656,6 +2685,7 @@ function dbRowToReturn(r){
     id: r.order_id, masterId: r.master_id, type: r.type, patient: r.patient,
     qty: r.qty, cat: r.cat, sup: r.sup, deadline: r.deadline,
     urgent: r.urgent, isReprint: r.is_reprint, itemComment: r.item_comment||'',
+    file: r.file_name ? {name:r.file_name, size:r.file_size, attached:r.file_attached} : null,
     returnedBy: r.returned_by, reason: r.reason, comment: r.comment||'',
     returnedAt: r.returned_at_text, resolved: r.resolved, resolvedAt: r.resolved_at_text,
     _dbId: r.id,
@@ -2671,6 +2701,8 @@ async function insertReturnToDb(rec){
     order_id: rec.id, master_id: rec.masterId, type: rec.type, patient: rec.patient,
     qty: rec.qty, cat: rec.cat, sup: rec.sup, deadline: rec.deadline || null,
     urgent: !!rec.urgent, is_reprint: !!rec.isReprint, item_comment: rec.itemComment||'',
+    file_name: rec.file ? rec.file.name : null, file_size: rec.file ? rec.file.size : null,
+    file_attached: rec.file ? !!rec.file.attached : false,
     returned_by: rec.returnedBy, reason: rec.reason, comment: rec.comment,
     returned_at_text: rec.returnedAt,
   });
@@ -2710,6 +2742,7 @@ async function confirmReturn(){
     id: o.id, masterId: o.masterId, type: o.type, patient: o.patient,
     qty: o.qty, cat: o.cat, sup: o.sup, deadline: o.deadline || null,
     urgent: !!o.urgent, isReprint: !!o.isReprint, itemComment: o.comment || '',
+    file: o.file || null,
     returnedBy: currentUser ? currentUser.name : 'Сотрудник',
     reason, comment, returnedAt: nowTime(),
   };
@@ -2795,6 +2828,10 @@ function openEditReturnModal(dbId){
   document.getElementById('erType').value = r.type || 'Элайнер';
   document.getElementById('erQty').value = r.qty || 1;
   document.getElementById('erComment').value = r.itemComment || '';
+  document.getElementById('erFile').value = '';
+  document.getElementById('erFileHint').textContent = r.file && r.file.name
+    ? 'Текущий файл: ' + r.file.name + (r.file.size ? ' (' + r.file.size + ')' : '')
+    : 'Файл не был прикреплён — возможно, поэтому подзаказ вернулся';
   document.getElementById('editReturnOverlay').classList.add('open');
 }
 function closeEditReturnModal(){
@@ -2817,6 +2854,15 @@ async function submitEditReturn(){
   const qty = parseInt(document.getElementById('erQty').value) || 1;
   const comment = document.getElementById('erComment').value.trim();
 
+  const fileInput = document.getElementById('erFile');
+  let attachedFile = r.file || null;
+  if(fileInput && fileInput.files && fileInput.files[0]){
+    const f = fileInput.files[0];
+    const sizeKb = f.size/1024;
+    const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
+    attachedFile = { name:f.name, size:sizeStr, attached:true };
+  }
+
   const now = new Date();
   const order = {
     id: r.id, masterId: r.masterId, type, cat: MAT_CFG_CATS[type] || 'polymer',
@@ -2824,7 +2870,7 @@ async function submitEditReturn(){
     arrived: now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
     worker: null, workerId: null, stage: -1,
     urgent, deadline, comment, isReprint, isFixed: true,
-    file: null, delegatedFrom: null, _createdAt: Date.now(),
+    file: attachedFile, delegatedFrom: null, _createdAt: Date.now(),
   };
   adminOrders = adminOrders.filter(o=>o.id!==order.id);
   adminOrders.unshift(order);
@@ -3548,6 +3594,12 @@ window.confirmDeleg = async function(targetEmp){
   const o = myWork.find(x=>x.id===delegTargetId); // находим ДО вызова, подзаказ уедет из myWork
   _origConfirmDeleg(targetEmp);
   if(o && o.delegatedFrom) await upsertOrderToDb(o); // синхронизируем только если делегирование реально прошло
+};
+const _origConfirmDelegToQueue = confirmDelegToQueue;
+window.confirmDelegToQueue = async function(){
+  const o = myWork.find(x=>x.id===delegTargetId); // находим ДО вызова, подзаказ уедет из myWork
+  _origConfirmDelegToQueue();
+  if(o) await upsertOrderToDb(o);
 };
 
 /* ─── INIT ─── */

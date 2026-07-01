@@ -169,6 +169,9 @@ create table if not exists returns (
   urgent boolean default false,
   is_reprint boolean default false,
   item_comment text default '',   -- исходный комментарий к подзаказу (не путать с comment — это причина возврата)
+  file_name text,                 -- снимок прикреплённого файла на момент возврата
+  file_size text,
+  file_attached boolean default false,
   returned_by text not null,      -- ФИО оператора
   reason text not null,
   comment text default '',
@@ -186,6 +189,9 @@ alter table returns add column if not exists deadline date;
 alter table returns add column if not exists urgent boolean default false;
 alter table returns add column if not exists is_reprint boolean default false;
 alter table returns add column if not exists item_comment text default '';
+alter table returns add column if not exists file_name text;
+alter table returns add column if not exists file_size text;
+alter table returns add column if not exists file_attached boolean default false;
 
 alter table returns enable row level security;
 
