@@ -1198,6 +1198,76 @@
   </div>
 </div>
 
+<!-- EDIT & REPOST RETURNED SUB-ORDER MODAL -->
+<div class="fixed-overlay" id="editReturnOverlay">
+  <div class="fixed-modal" style="max-width:600px">
+    <div class="m-hd">
+      <div class="m-title">✎ Редактировать возвращённый подзаказ <span id="editReturnId"></span></div>
+      <button class="m-close" onclick="closeEditReturnModal()">×</button>
+    </div>
+    <div class="m-body">
+      <div style="font-size:12px;color:var(--text2)">Внесите правки и разместите подзаказ заново — он вернётся в очередь на печать со статусом «ИСПРАВЛЕН».</div>
+      <div class="admin-form-wrap" style="padding:0;border:none;align-items:flex-end">
+        <div class="af">
+          <label>№ Заказа</label>
+          <input type="text" id="erMasterId" style="width:90px" disabled>
+        </div>
+        <div class="af">
+          <label>Пациент</label>
+          <input type="text" id="erPatient" style="width:180px">
+        </div>
+        <div class="af">
+          <label>Источник</label>
+          <select id="erSup">
+            <option>Сетап</option>
+            <option>Моделировщик</option>
+            <option>Менеджер</option>
+            <option>ОТК (перепечатка)</option>
+          </select>
+        </div>
+        <div class="af">
+          <label>Статус заказа</label>
+          <select id="erStatus" style="width:190px">
+            <option value="normal">Текущий — до (дата)</option>
+            <option value="urgent">🔥 Срочный — высокий приоритет</option>
+            <option value="reprint">⚡ Перепечатка — наивысший приоритет</option>
+          </select>
+        </div>
+        <div class="af">
+          <label>Срок (до какой даты)</label>
+          <input type="date" id="erDeadline" style="width:140px">
+        </div>
+        <div class="af">
+          <label>Изделие</label>
+          <select id="erType" style="width:200px">
+            <optgroup label="Полимер">
+              <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
+            </optgroup>
+            <optgroup label="Биосовместимый полимер">
+              <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
+            </optgroup>
+            <optgroup label="Металл">
+              <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="af">
+          <label>Кол-во</label>
+          <input type="number" id="erQty" value="1" min="1" max="99" style="width:70px">
+        </div>
+        <div class="af" style="flex:1;min-width:220px">
+          <label>Комментарий</label>
+          <input type="text" id="erComment" placeholder="Особые требования..." style="width:100%">
+        </div>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn-primary" onclick="submitEditReturn()">💾 Сохранить и разместить как ИСПРАВЛЕН</button>
+      <button class="btn-ghost" onclick="closeEditReturnModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <!-- HISTORY DETAIL MODAL -->
 <div class="fixed-overlay" id="histOverlay">
   <div class="fixed-modal">
@@ -2520,6 +2590,7 @@ function dbRowToOrder(r){
     finishedAsAssemblyReady: r.finished_assembly_ready,
     delegatedFrom: r.delegated_from, delegatedTo: r.delegated_to,
     delegHistory: r.deleg_history, _isAssembly: r.is_assembly,
+    isFixed: r.is_fixed,
   };
 }
 
@@ -2540,6 +2611,7 @@ function orderToDbRow(o){
     finished_assembly_ready: !!o.finishedAsAssemblyReady,
     delegated_from: o.delegatedFrom || null, delegated_to: o.delegatedTo || null,
     deleg_history: o.delegHistory || null, is_assembly: !!o._isAssembly,
+    is_fixed: !!o.isFixed,
   };
 }
 
@@ -2676,7 +2748,7 @@ function renderReturnsPanel(){
       const statusCell = isResolved
         ? `<span class="badge b-green" style="font-size:10px">✓ Решено</span>`
         : `<div style="display:flex;gap:5px;flex-wrap:wrap">
-             <button onclick="adminRepostReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">🔄 Заново</button>
+             <button onclick="openEditReturnModal(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">✎ Редактировать</button>
              <button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #2c6e1f;background:#eaf6e3;color:#2c6e1f;cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>
            </div>`;
       return `<tr style="border-bottom:1px solid #f3c9c5;background:${rowBg}">
@@ -2702,25 +2774,51 @@ async function resolveReturn(dbId){
   showToast('✓ Возврат отмечен как решённый');
 }
 
-/* ─── ПОВТОРНОЕ РАЗМЕЩЕНИЕ ВОЗВРАЩЁННОГО ПОДЗАКАЗА ─── */
-async function adminRepostReturn(dbId){
+/* ─── РЕДАКТИРОВАНИЕ И ПОВТОРНОЕ РАЗМЕЩЕНИЕ ВОЗВРАЩЁННОГО ПОДЗАКАЗА ─── */
+let editReturnTargetDbId = null;
+
+function openEditReturnModal(dbId){
   const r = returnsCache.find(x=>x._dbId===dbId);
   if(!r) return;
-  const ok = await showConfirm(
-    'Подзаказ '+r.id+' (заказ №'+r.masterId+', '+r.type+') будет снова добавлен в очередь на печать со статусом «в очереди».',
-    '🔄 Разместить заново?'
-  );
-  if(!ok) return;
+  editReturnTargetDbId = dbId;
+  document.getElementById('editReturnId').textContent = r.id;
+  document.getElementById('erMasterId').value = r.masterId || '';
+  document.getElementById('erPatient').value = r.patient || '';
+  document.getElementById('erSup').value = r.sup || 'Менеджер';
+  document.getElementById('erStatus').value = r.isReprint ? 'reprint' : (r.urgent ? 'urgent' : 'normal');
+  document.getElementById('erDeadline').value = r.deadline || '';
+  document.getElementById('erType').value = r.type || 'Элайнер';
+  document.getElementById('erQty').value = r.qty || 1;
+  document.getElementById('erComment').value = r.itemComment || '';
+  document.getElementById('editReturnOverlay').classList.add('open');
+}
+function closeEditReturnModal(){
+  document.getElementById('editReturnOverlay').classList.remove('open');
+  editReturnTargetDbId = null;
+}
+async function submitEditReturn(){
+  const dbId = editReturnTargetDbId;
+  const r = returnsCache.find(x=>x._dbId===dbId);
+  if(!r) return;
+
+  const patient = document.getElementById('erPatient').value.trim();
+  if(!patient){ alert('Укажите ФИО пациента'); return; }
+  const sup = document.getElementById('erSup').value;
+  const statusVal = document.getElementById('erStatus').value;
+  const urgent = statusVal === 'urgent';
+  const isReprint = statusVal === 'reprint';
+  const deadline = document.getElementById('erDeadline').value || null;
+  const type = document.getElementById('erType').value;
+  const qty = parseInt(document.getElementById('erQty').value) || 1;
+  const comment = document.getElementById('erComment').value.trim();
 
   const now = new Date();
   const order = {
-    id: r.id, masterId: r.masterId, type: r.type,
-    cat: r.cat || MAT_CFG_CATS[r.type] || 'polymer',
-    patient: r.patient, sup: r.sup || 'Менеджер', qty: r.qty || 1,
+    id: r.id, masterId: r.masterId, type, cat: MAT_CFG_CATS[type] || 'polymer',
+    patient, sup, qty,
     arrived: now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
     worker: null, workerId: null, stage: -1,
-    urgent: !!r.urgent, deadline: r.deadline || null,
-    comment: r.itemComment || '', isReprint: !!r.isReprint,
+    urgent, deadline, comment, isReprint, isFixed: true,
     file: null, delegatedFrom: null, _createdAt: Date.now(),
   };
   adminOrders = adminOrders.filter(o=>o.id!==order.id);
@@ -2728,9 +2826,10 @@ async function adminRepostReturn(dbId){
   await upsertOrderToDb(order);
   await markReturnResolvedInDb(dbId);
 
+  closeEditReturnModal();
   renderAdminQueue();
   renderReturnsPanel();
-  showToast('🔄 Подзаказ '+r.id+' снова размещён в очереди на печать');
+  showToast('✎ Подзаказ '+r.id+' исправлен и снова размещён в очереди на печать (статус: ИСПРАВЛЕН)');
 }
 
 /* ─── ADMIN TABS ─── */
@@ -3277,6 +3376,7 @@ function renderAdminOrderTable(tbodyId, list, mode){
     const reprintBadge = o.isReprint ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ПЕРЕПЕЧАТКА</span>' : '';
     const assemblyBadge = o._isAssembly ? ' <span style="background:#eaf6e3;color:#2c6e1f;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">СБОРКА</span>' : '';
     const waitBadge = (o.finishedAt && o.finishedAsAssemblyReady && !o._isAssembly) ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ЖДЁТ СБОРКИ</span>' : '';
+    const fixedBadge = o.isFixed ? ' <span style="background:#fff3cd;color:#7a5c00;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ИСПРАВЛЕН</span>' : '';
     const fileBadge = o.file && o.file.attached ? `<span title="${o.file.name}" style="font-size:11px">📎</span>` : '';
     const stageInfo = mode==='placed' ? '—' : (o.finishedAt ? '✓ завершён' : (st(o)[o.stage] || '—'));
     const delegInfo = o.delegatedFrom ? `<span style="color:#5b4a9e;font-weight:700">↪ Делегирован от ${o.delegatedFrom}</span>` : '';
@@ -3286,7 +3386,7 @@ function renderAdminOrderTable(tbodyId, list, mode){
       ? deleteBtn
       : `<div style="display:flex;gap:5px">${detailBtn}${deleteBtn}</div>`;
     return `<tr style="border-bottom:1px solid #eef1f3;cursor:pointer" onclick="openAdminDetail('${o.id}')">
-      <td style="padding:7px 10px;font-size:12px;font-weight:700">${o.id}${urgBadge}${reprintBadge}${assemblyBadge}${waitBadge}</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:700">${o.id}${urgBadge}${reprintBadge}${assemblyBadge}${waitBadge}${fixedBadge}</td>
       <td style="padding:7px 10px;font-size:11px"><span style="background:${o.cat==='polymer'?'#e8f3fc':o.cat==='assembly'?'#eaf6e3':'#fdf3df'};color:${o.cat==='polymer'?'#0c447c':o.cat==='assembly'?'#2c6e1f':'#633806'};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.type}</span></td>
       <td style="padding:7px 10px;font-size:11px;color:#5a6470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
       <td style="padding:7px 10px;font-size:11px"><span style="background:#eef1f3;color:#5a6470;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.sup}</span></td>
@@ -3322,6 +3422,7 @@ function openAdminDetail(id){
   if(o.isReprint) statusHtml.push('<span class="badge" style="background:#ed6a5e;color:#fff">⚡ Перепечатка</span>');
   if(o.deadline) statusHtml.push(`<span class="badge b-deadline">⏳ до ${fmtDeadline(o.deadline)}</span>`);
   if(o.delegatedFrom) statusHtml.push(`<span class="badge b-deleg">↪ делегирован от ${o.delegatedFrom}</span>`);
+  if(o.isFixed) statusHtml.push('<span class="badge" style="background:#fff3cd;color:#7a5c00">✎ Исправлен после возврата</span>');
   document.getElementById('adminDetailStatusRow').innerHTML = statusHtml.join('');
 
   // Если заказ был возвращён поставщику — показываем причину (ищем в RETURNS storage)

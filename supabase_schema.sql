@@ -88,9 +88,13 @@ create table if not exists orders (
   deleg_history jsonb,                        -- {doneStage, note, takenAt, handedAt, duration}
 
   is_assembly boolean not null default false, -- это автосозданная задача "Сборка заказа"
+  is_fixed boolean not null default false,    -- подзаказ отредактирован и заново размещён после возврата
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Если таблица orders уже существовала в БД до добавления повторного размещения — доносим колонку
+alter table orders add column if not exists is_fixed boolean not null default false;
 
 create index if not exists idx_orders_master_id on orders(master_id);
 create index if not exists idx_orders_worker on orders(worker);
