@@ -71,6 +71,7 @@ create table if not exists orders (
   file_name text,
   file_size text,
   file_attached boolean default false,
+  files jsonb default '[]'::jsonb,  -- список прикреплённых файлов [{name,size}], поддержка нескольких файлов
 
   worker uuid references profiles(id),       -- кто сейчас держит подзаказ
   stage integer not null default -1,          -- -1 = в очереди, 0+ = индекс этапа
@@ -95,6 +96,7 @@ create table if not exists orders (
 
 -- Если таблица orders уже существовала в БД до добавления повторного размещения — доносим колонку
 alter table orders add column if not exists is_fixed boolean not null default false;
+alter table orders add column if not exists files jsonb default '[]'::jsonb;
 
 create index if not exists idx_orders_master_id on orders(master_id);
 create index if not exists idx_orders_worker on orders(worker);
@@ -172,6 +174,7 @@ create table if not exists returns (
   file_name text,                 -- снимок прикреплённого файла на момент возврата
   file_size text,
   file_attached boolean default false,
+  files jsonb default '[]'::jsonb, -- снимок всех прикреплённых файлов [{name,size}]
   returned_by text not null,      -- ФИО оператора
   reason text not null,
   comment text default '',
@@ -192,6 +195,7 @@ alter table returns add column if not exists item_comment text default '';
 alter table returns add column if not exists file_name text;
 alter table returns add column if not exists file_size text;
 alter table returns add column if not exists file_attached boolean default false;
+alter table returns add column if not exists files jsonb default '[]'::jsonb;
 
 alter table returns enable row level security;
 

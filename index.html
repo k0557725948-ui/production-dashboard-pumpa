@@ -9,65 +9,78 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    /* Bitrix24 palette — light */
-    --bg: #eef2f4;
+    /* Apple-style palette — light */
+    --bg: #f2f2f7;
     --surface: #ffffff;
-    --surface2: #f5f7f9;
-    --border: #e2e6ea;
-    --border2: #d3dae0;
-    --text: #1a2733;
-    --text2: #7a8694;
-    --text3: #a8b2bc;
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
+    --surface2: #f7f7f7;
+    --border: rgba(0,0,0,.07);
+    --border2: rgba(0,0,0,.14);
+    --text: #1d1d1f;
+    --text2: #6e6e73;
+    --text3: #a1a1a6;
+    --radius-sm: 10px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-pill: 20px;
 
-    --b24-blue:    #1b6fb8;
+    --topbar-bg: rgba(255,255,255,.82);
+    --topbar-border: rgba(0,0,0,.06);
+    --hover-bg: #f9f9fb;
+
+    --b24-blue:    #0071e3;
     --b24-blue-lt: #e8f3fc;
     --b24-blue-mid:#2fc6f6;
-    --b24-blue-deep:#0d5a9e;
+    --b24-blue-deep:#0058b9;
 
-    --blue:    #1b6fb8; --blue-bg:  #e8f3fc; --blue-mid: #2fc6f6;
-    --green:   #2c6e1f; --green-bg: #eaf6e3; --green-mid: #65c16f;
-    --amber:   #9a6400; --amber-bg: #fdf3df; --amber-mid: #f8c750;
-    --red:     #b3372c; --red-bg:   #fde6e4; --red-mid:   #ed6a5e;
-    --purple:  #5b4a9e; --purple-bg:#eee9fb;
+    --blue:    #0071e3; --blue-bg:  rgba(0,113,227,.08);  --blue-mid: #0071e3;
+    --green:   #1d8a3d; --green-bg: rgba(29,138,61,.08);  --green-mid: #22a446;
+    --amber:   #9a6400; --amber-bg: rgba(154,100,0,.09);  --amber-mid: #9a6400;
+    --red:     #d70015; --red-bg:   rgba(215,0,21,.08);   --red-mid:   #d70015;
+    --purple:  #6e3dd1; --purple-bg:rgba(110,61,209,.08); --purple-mid:#6e3dd1;
+    --pink:    #c72c63; --pink-bg:  rgba(199,44,99,.08);  --pink-mid: #c72c63;
+    --orange:  #c2660a; --orange-bg:rgba(194,102,10,.1);  --orange-mid:#c2660a;
     --teal:    #0f7a6b; --teal-bg:  #e1f5f1; --teal-mid:  #43c0ac;
-    --gray:    #5a6470; --gray-bg:  #eef1f3;
+    --gray:    #5a6470; --gray-bg:  rgba(0,0,0,.05); --gray-mid: #5a6470;
   }
 
   /* ─── DARK THEME ─── */
   [data-theme="dark"] {
-    --bg: #0f1923;
-    --surface: #1a2533;
-    --surface2: #212f3d;
-    --border: #2a3a4c;
-    --border2: #344a60;
-    --text: #e2e8f0;
-    --text2: #8fa3b8;
-    --text3: #4e6278;
+    --bg: #000000;
+    --surface: rgba(255,255,255,.03);
+    --surface2: rgba(255,255,255,.05);
+    --border: rgba(255,255,255,.08);
+    --border2: rgba(255,255,255,.16);
+    --text: rgba(255,255,255,.92);
+    --text2: rgba(255,255,255,.55);
+    --text3: rgba(255,255,255,.35);
 
-    --blue-bg:  #0e2a4a; --blue-mid: #2fc6f6;
-    --green-bg: #0a2412; --green-mid: #65c16f;
-    --amber-bg: #2a1a04; --amber-mid: #f8c750;
-    --red-bg:   #2a0e0e; --red-mid:   #ed6a5e;
-    --purple-bg:#1a1240;
-    --teal-bg:  #062018;
-    --gray-bg:  #1c2532;
+    --topbar-bg: rgba(0,0,0,.72);
+    --topbar-border: rgba(255,255,255,.08);
+    --hover-bg: rgba(255,255,255,.03);
+
+    --blue-bg:  rgba(96,165,250,.12);  --blue-mid: #60a5fa;
+    --green-bg: rgba(52,199,89,.12);   --green-mid: #34c759;
+    --amber-bg: rgba(255,159,10,.12);  --amber-mid: #ffb340;
+    --red-bg:   rgba(255,69,58,.12);   --red-mid:   #ff6961;
+    --purple-bg:rgba(191,90,242,.12);  --purple-mid:#bf5af2;
+    --pink-bg:  rgba(255,105,150,.12); --pink-mid: #ff86a8;
+    --orange-bg:rgba(255,149,10,.12);  --orange-mid:#ff9f0a;
+    --teal-bg:  rgba(48,209,190,.12);  --teal-mid: #30d1be;
+    --gray-bg:  rgba(255,255,255,.06); --gray-mid: #9aa3ab;
   }
-  [data-theme="dark"] .b24-strip { background: linear-gradient(90deg,#0d5a9e 0%,#1b6fb8 100%); }
-  [data-theme="dark"] .login-card { background:#1a2533;box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  [data-theme="dark"] .b24-strip { background: linear-gradient(90deg,#0058b9 0%,#0071e3 100%); }
+  [data-theme="dark"] .login-card { background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5); }
   [data-theme="dark"] .login-logo h1 { color:var(--text); }
   [data-theme="dark"] .login-field input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
   [data-theme="dark"] .login-field input::placeholder { color:var(--text3); }
   [data-theme="dark"] .admin-form-wrap { background:var(--surface); }
   [data-theme="dark"] .admin-form-wrap select,
   [data-theme="dark"] .admin-form-wrap input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
-  [data-theme="dark"] .master-row td { background:var(--surface2); }
+  [data-theme="dark"] .master-row td, [data-theme="dark"] .master-row-pill { background:var(--surface2); }
   [data-theme="dark"] .kanban-card { background:var(--surface); }
   [data-theme="dark"] .bell-popup { background:var(--surface);border-color:var(--border2); }
-  [data-theme="dark"] .bell-popup-hd { background:#0f1923; }
-  [data-theme="dark"] .fixed-modal { background:var(--surface); }
+  [data-theme="dark"] .bell-popup-hd { background:var(--surface2); }
+  [data-theme="dark"] .fixed-modal { background:#1c1c1e;border:1px solid var(--border); }
   [data-theme="dark"] .m-hd { background:var(--surface2); }
   [data-theme="dark"] select, [data-theme="dark"] input[type=date],
   [data-theme="dark"] input[type=text], [data-theme="dark"] input[type=number],
@@ -76,15 +89,20 @@
   [data-theme="dark"] .vs-btn.active { background:var(--surface2); }
   [data-theme="dark"] .theme-toggle .tt-sun { display:flex; }
   [data-theme="dark"] .theme-toggle .tt-moon { display:none; }
+  [data-theme="dark"] .user-logout-btn, [data-theme="dark"] .admin-logout { border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7); }
+  [data-theme="dark"] .st { background: #000; border-color: rgba(255,255,255,.06); }
 
   /* ─── THEME TOGGLE BUTTON ─── */
-  .theme-toggle { display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);font-family:inherit;transition:all .15s;white-space:nowrap; }
+  .theme-toggle { display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:4px 10px;cursor:pointer;font-size:11px;font-weight:500;color:var(--text2);font-family:inherit;transition:all .15s;white-space:nowrap; }
   .theme-toggle:hover { border-color:var(--blue-mid);color:var(--blue); }
   .tt-icon { font-size:14px;line-height:1; }
   .tt-sun { display:none; }
   .tt-moon { display:flex; }
 
-  body { font-family: -apple-system, "Helvetica Neue", Arial, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; overflow-x: hidden; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; overflow-x: hidden; }
+  .page.active, .login-card { animation: fadeUp .5s cubic-bezier(.2,.8,.2,1) both; }
 
   /* Layout */
   .app { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
@@ -142,23 +160,33 @@
   tr.row-click:hover td { background: var(--blue-bg); cursor: pointer; }
   .empty-row { text-align: center; padding: 20px; color: var(--text3); font-size: 12px; }
 
-  /* Badge */
-  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  /* Badge — pill-shaped, tinted bg + matching border, saturated text in light / light text in dark */
+  .badge { display: inline-flex; align-items:center; font-size: 10px; padding: 3px 9px; border-radius: var(--radius-pill); font-weight: 700; white-space: nowrap; border: 1px solid currentColor; }
   .b-blue   { background: var(--blue-bg);   color: var(--blue); }
   .b-amber  { background: var(--amber-bg);  color: var(--amber); }
   .b-green  { background: var(--green-bg);  color: var(--green); }
   .b-gray   { background: var(--gray-bg);   color: var(--gray); }
-  .b-pink   { background: #fbeaf0; color: #72243e; }
+  .b-pink   { background: var(--pink-bg);   color: var(--pink); }
   .b-teal   { background: var(--teal-bg);   color: var(--teal); }
   .b-purple { background: var(--purple-bg); color: var(--purple); }
   .b-red    { background: var(--red-bg);    color: var(--red); }
+  .b-orange { background: var(--orange-bg); color: var(--orange); }
+  [data-theme="dark"] .b-blue   { color: var(--blue-mid); }
+  [data-theme="dark"] .b-amber  { color: var(--amber-mid); }
+  [data-theme="dark"] .b-green  { color: var(--green-mid); }
+  [data-theme="dark"] .b-gray   { color: var(--gray-mid); }
+  [data-theme="dark"] .b-pink   { color: var(--pink-mid); }
+  [data-theme="dark"] .b-teal   { color: var(--teal-mid); }
+  [data-theme="dark"] .b-purple { color: var(--purple-mid); }
+  [data-theme="dark"] .b-red    { color: var(--red-mid); }
+  [data-theme="dark"] .b-orange { color: var(--orange-mid); }
 
   /* Dots */
   .dots { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; }
   .dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   /* Buttons */
-  .btn-take { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--b24-blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-take { font-size: 11px; padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
   .btn-take:hover { background: #d3ecfb; }
   .btn-primary { flex: 1; padding: 9px; border-radius: var(--radius-md); border: none; background: var(--b24-blue); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .btn-primary:hover { background: var(--b24-blue-deep); }
@@ -238,12 +266,12 @@
   .refill-result span { font-weight: 700; color: var(--text); }
 
   /* Stage advance button in table */
-  .btn-adv { font-size: 11px; padding: 4px 9px; border-radius: var(--radius-sm); border: 1px solid var(--b24-blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
-  .btn-adv:hover { background: #d3ecfb; }
-  .btn-adv.finish { border-color: var(--green-mid); background: var(--green-bg); color: var(--green); }
-  .btn-adv.finish:hover { background: #d8f0d4; }
-  .btn-deleg { font-size: 11px; padding: 4px 9px; border-radius: var(--radius-sm); border: 1px solid var(--purple); background: var(--purple-bg); color: var(--purple); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
-  .btn-deleg:hover { background: #e0d9fb; }
+  .btn-adv { font-size: 11px; padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--blue); background: var(--blue-bg); color: var(--blue); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-adv:hover { filter: brightness(.97); }
+  .btn-adv.finish { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+  .btn-adv.finish:hover { filter: brightness(.97); }
+  .btn-deleg { font-size: 11px; padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--purple); background: var(--purple-bg); color: var(--purple); cursor: pointer; font-weight: 600; white-space: nowrap; font-family: inherit; }
+  .btn-deleg:hover { filter: brightness(.97); }
 
   /* Order id grouping */
   .order-master { font-size: 11px; font-weight: 700; color: var(--text); }
@@ -253,6 +281,11 @@
   .b-urgent { background: var(--red-bg); color: var(--red); }
   .b-deadline { background: var(--amber-bg); color: var(--amber); }
   .b-deleg { background: var(--purple-bg); color: var(--purple); }
+  [data-theme="dark"] .b-urgent { color: var(--red-mid); }
+  [data-theme="dark"] .b-deadline { color: var(--amber-mid); }
+  [data-theme="dark"] .b-deleg { color: var(--purple-mid); }
+  .b-fixed { background: #fff3cd; color: #7a5c00; }
+  [data-theme="dark"] .b-fixed { background: rgba(255,211,10,.12); color: #ffd60a; }
 
   /* File mock */
   .file-box { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
@@ -278,8 +311,8 @@
   .deleg-role { font-size: 10px; color: var(--text2); }
 
   /* ─── VIEW SWITCHER ─── */
-  .view-switcher { display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px; }
-  .vs-btn { padding:4px 9px;border:none;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s; }
+  .view-switcher { display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px; }
+  .vs-btn { padding:4px 10px;border:none;border-radius:var(--radius-pill);font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--text2);font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s; }
   .vs-btn.active { background:var(--surface);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08); }
   .vs-btn:hover:not(.active) { color:var(--text); }
 
@@ -288,7 +321,7 @@
   .kanban-master-hd { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px;display:flex;align-items:center;gap:6px; }
   .kanban-group { margin-bottom:6px; }
   .kanban-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px; }
-  .kanban-card { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden; }
+  .kanban-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden; }
   .kanban-card:hover { box-shadow:0 2px 8px rgba(20,40,80,.10);border-color:var(--blue-mid); }
   .kanban-card::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:8px 0 0 8px; }
   .kanban-card.cat-polymer::before { background:var(--blue-mid); }
@@ -308,11 +341,11 @@
   .kc-progress-fill { height:4px;border-radius:2px;transition:width .3s; }
   .kc-stage { font-size:10px;font-weight:600;color:var(--blue);margin-top:2px; }
   .kc-actions { display:flex;gap:5px;margin-top:4px; }
-  .kc-btn-take { flex:1;font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;text-align:center; }
-  .kc-btn-take:hover { background:#d3ecfb; }
-  .kc-btn-adv { flex:1;font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600; }
-  .kc-btn-adv.finish { border-color:var(--green-mid);background:var(--green-bg);color:var(--green); }
-  .kc-btn-deleg { font-size:10px;padding:4px 8px;border-radius:4px;border:1px solid var(--purple);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;font-weight:600; }
+  .kc-btn-take { flex:1;font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;text-align:center; }
+  .kc-btn-take:hover { filter:brightness(.97); }
+  .kc-btn-adv { flex:1;font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600; }
+  .kc-btn-adv.finish { border-color:var(--green);background:var(--green-bg);color:var(--green); }
+  .kc-btn-deleg { font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--purple);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;font-weight:600; }
 
   /* ─── MINI BADGE VIEW ─── */
   .mini-wrap { display:flex;flex-direction:column;gap:6px;padding:10px 14px; }
@@ -325,15 +358,21 @@
   .mini-patient { font-size:11px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
   .mini-stage { font-size:10px;color:var(--blue);font-weight:600;white-space:nowrap; }
   .mini-btns { display:flex;gap:4px;flex-shrink:0; }
-  .mini-btn { font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--blue-mid);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
-  .mini-btn.finish { border-color:var(--green-mid);background:var(--green-bg);color:var(--green); }
+  .mini-btn { font-size:10px;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
+  .mini-btn.finish { border-color:var(--green);background:var(--green-bg);color:var(--green); }
   .mini-btn.deleg { border-color:var(--purple);background:var(--purple-bg);color:var(--purple); }
   .mini-btn.preview { border-color:var(--text3);background:var(--surface2);color:var(--text2); }
 
-  /* Order grouping styles */
-  .master-row td { background: var(--surface2); font-size:11px; font-weight:700; color:var(--text2); padding:5px 10px; border-bottom:1px solid var(--border); letter-spacing:.3px; text-transform:uppercase; }
+  /* Order grouping styles — compact single-line master row */
+  .master-row td { background: var(--surface2); padding:9px 12px; border-bottom:1px solid var(--border); }
+  .master-row-line { display:flex; align-items:center; gap:10px; }
+  .master-pill { font-size:10px; letter-spacing:.3px; flex-shrink:0; }
+  .master-patient { font-size:12px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .master-row-right { margin-left:auto; display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .master-sup { font-size:10px; color:var(--text3); white-space:nowrap; }
   .sub-row td:first-child { padding-left:24px; }
   .sub-row td { border-bottom:1px solid var(--border); vertical-align:middle; padding:7px 10px; }
+  .sub-row:hover td { background: var(--hover-bg); }
   .sub-row:last-of-type td { border-bottom: 2px solid var(--border2); }
 
   /* Scrollbar */
@@ -445,73 +484,76 @@
   /* ─── LOGIN SCREEN ─── */
   .login-screen { position:fixed;inset:0;background:linear-gradient(135deg,#0d4f8a 0%,#1b6fb8 50%,#2fc6f6 100%);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:0; }
   .login-screen.hidden { display:none; }
-  .login-card { background:#fff;border-radius:12px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(10,40,80,.35); }
+  .login-card { background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(10,40,80,.35); }
   .login-logo { text-align:center;margin-bottom:28px; }
-  .login-logo-icon { width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1b6fb8,#2fc6f6);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px; }
+  .login-logo-icon { width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1b6fb8,#2fc6f6);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px; }
   .login-logo h1 { font-size:18px;font-weight:700;color:#1a2733;margin:0; }
   .login-logo p  { font-size:12px;color:#7a8694;margin:4px 0 0; }
   .login-field { margin-bottom:14px; }
   .login-field label { display:block;font-size:11px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px; }
-  .login-field input { width:100%;height:40px;padding:0 12px;border:1.5px solid #d3dae0;border-radius:6px;font-size:14px;color:#1a2733;font-family:inherit;outline:none;transition:border .15s; }
+  .login-field input { width:100%;height:42px;padding:0 14px;border:1.5px solid #d3dae0;border-radius:12px;font-size:14px;color:#1a2733;font-family:inherit;outline:none;transition:border .15s; }
   .login-field input:focus { border-color:#1b6fb8;box-shadow:0 0 0 3px rgba(27,111,184,.12); }
-  .login-btn { width:100%;height:42px;background:#1b6fb8;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:background .15s; }
+  .login-btn { width:100%;height:44px;background:#1b6fb8;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:background .15s; }
   .login-btn:hover { background:#0d5a9e; }
-  .login-error { background:#fde6e4;border:1px solid #ed6a5e;border-radius:6px;padding:9px 12px;font-size:12px;color:#b3372c;margin-top:10px;display:none; }
+  .login-error { background:#fde6e4;border:1px solid #ed6a5e;border-radius:10px;padding:9px 12px;font-size:12px;color:#b3372c;margin-top:10px;display:none; }
   .login-error.show { display:block; }
   /* ─── ADMIN PANEL ─── */
-  .admin-bar { background:#1a2733;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap; }
-  .admin-bar-title { font-size:13px;font-weight:700;color:#2fc6f6;flex:1; }
-  .admin-logout { font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:transparent;color:#a8b2bc;cursor:pointer;font-family:inherit; }
-  .admin-logout:hover { background:#2a3a4c;color:#fff; }
-  .admin-form-wrap { background:#fff;border-bottom:1px solid #d3dae0;padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end; }
-  .admin-form-wrap label { font-size:10px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px; }
-  .admin-form-wrap select, .admin-form-wrap input[type=text], .admin-form-wrap input[type=number] { height:34px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;color:#1a2733;font-family:inherit;outline:none; }
-  .admin-form-wrap select:focus, .admin-form-wrap input:focus { border-color:#1b6fb8; }
+  .admin-bar { background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:4px;z-index:900;border-bottom:1px solid var(--topbar-border); }
+  .admin-bar-title { font-size:13px;font-weight:700;color:var(--blue);flex:1; }
+  .admin-tab-btn { font-size:11px;padding:6px 14px;border-radius:var(--radius-pill);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s; }
+  .admin-tab-btn.active { background:var(--blue);border-color:var(--blue);color:#fff; }
+  .admin-tab-btn:not(.active):hover { background:var(--surface2); }
+  .admin-btn-danger { font-size:11px;padding:6px 14px;border-radius:var(--radius-pill);border:1px solid var(--red);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:inherit;font-weight:600; }
+  .admin-btn-danger:hover { filter:brightness(.95); }
+  .admin-logout, .user-logout-btn { font-size:11px;padding:5px 14px;border-radius:var(--radius-pill);border:1px solid rgba(0,0,0,.18);background:transparent;color:#3a3a3c;cursor:pointer;font-family:inherit; }
+  .admin-logout:hover, .user-logout-btn:hover { background:var(--surface2); }
+  .admin-form-wrap { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin:14px 20px;padding:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end; }
+  .admin-form-wrap label { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px; }
+  .admin-form-wrap select, .admin-form-wrap input[type=text], .admin-form-wrap input[type=number] { height:34px;padding:0 10px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;color:var(--text);font-family:inherit;outline:none;background:var(--surface); }
+  .admin-form-wrap select:focus, .admin-form-wrap input:focus { border-color:var(--blue); }
   .admin-form-wrap .af { display:flex;flex-direction:column; }
-  .btn-post { height:34px;padding:0 16px;background:#1b6fb8;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap; }
-  .btn-post:hover { background:#0d5a9e; }
-  .admin-urgent-chk { display:flex;align-items:center;gap:6px;font-size:12px;color:#1a2733;cursor:pointer;padding-top:18px; }
-  .admin-queue-wrap { padding:14px 20px; }
-  .admin-queue-title { font-size:12px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:flex;align-items:center;gap:8px; }
-  .admin-badge-new { background:#ed6a5e;color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px; }
+  .btn-post { height:34px;padding:0 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-pill);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap; }
+  .btn-post:hover { filter:brightness(1.08); }
+  .admin-urgent-chk { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;padding-top:18px; }
+  .admin-queue-wrap { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin:14px 20px;padding:16px;animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) both; }
+  .admin-queue-title { font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px; }
+  .admin-badge-new { background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px; }
   /* ─── NOTIFICATION TOAST ─── */
   .toast { position:fixed;bottom:20px;right:20px;background:#1a2733;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:99998;display:none;align-items:center;gap:10px;max-width:320px; }
   .toast.show { display:flex; }
   .toast-dot { width:8px;height:8px;border-radius:50%;background:#2fc6f6;flex-shrink:0;animation:pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
   /* ─── USER TOPBAR ─── */
-  .user-topbar { background:#1b6fb8;color:#fff;padding:7px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:4px;z-index:900;box-shadow:0 2px 6px rgba(0,0,0,.12); }
-  .user-topbar-name { font-size:12px;font-weight:700;flex:1; }
-  .user-topbar-role { font-size:11px;opacity:.75; }
-  .user-topbar-clock { font-size:12px;font-weight:600;opacity:.95;white-space:nowrap;display:flex;align-items:center;gap:6px;padding:0 4px;border-left:1px solid rgba(255,255,255,.25);margin-left:2px;padding-left:12px; }
+  .user-topbar { background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:4px;z-index:900;border-bottom:1px solid var(--topbar-border); }
+  .user-topbar-name { font-size:12px;font-weight:700;flex:1;color:var(--text); }
+  .user-topbar-role { font-size:11px;color:var(--text2); }
+  .user-topbar-clock { font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;display:flex;align-items:center;gap:6px;padding:0 4px;border-left:1px solid var(--border);margin-left:2px;padding-left:12px; }
   .utc-time { font-variant-numeric:tabular-nums; }
   .utc-date { opacity:.8;font-weight:500; }
-  .user-logout-btn { font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer;font-family:inherit; }
-  .user-logout-btn:hover { background:rgba(255,255,255,.15); }
   /* ─── BELL NOTIFICATION ─── */
   .bell-wrap { position:relative; display:flex; align-items:center; }
-  .bell-btn { background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;transition:background .15s; }
-  .bell-btn:hover { background:rgba(255,255,255,.15); }
+  .bell-btn { background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;transition:background .15s;color:var(--text2); }
+  .bell-btn:hover { background:var(--surface2); }
   .bell-icon { font-size:18px;line-height:1; }
   .bell-btn.active .bell-icon { animation:bell-ring .5s ease-in-out infinite alternate; }
   @keyframes bell-ring { 0%{transform:rotate(-15deg)} 100%{transform:rotate(15deg)} }
   @keyframes reprint-pulse { 0%,100%{box-shadow:0 0 0 3px rgba(237,106,94,.12)} 50%{box-shadow:0 0 0 6px rgba(237,106,94,.22)} }
-  .bell-dot { position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#ed6a5e;border:1.5px solid #1b6fb8;display:none; }
+  .bell-dot { position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid var(--surface);display:none; }
   .bell-btn.active .bell-dot { display:block; }
-  .bell-popup { position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #d3dae0;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,80,.18);width:260px;z-index:9990;display:none;flex-direction:column;overflow:hidden; }
+  .bell-popup { position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(20,40,80,.18);width:260px;z-index:9990;display:none;flex-direction:column;overflow:hidden;animation:fadeUp .25s ease both; }
   .bell-popup.open { display:flex; }
-  .bell-popup-hd { background:#1a2733;padding:10px 14px;display:flex;align-items:center;gap:8px; }
-  .bell-popup-title { font-size:12px;font-weight:700;color:#fff;flex:1; }
+  .bell-popup-hd { background:var(--surface2);padding:10px 14px;display:flex;align-items:center;gap:8px; }
+  .bell-popup-title { font-size:12px;font-weight:700;color:var(--text);flex:1; }
   .bell-popup-body { padding:12px 14px;display:flex;flex-direction:column;gap:8px; }
-  .bell-duty-name { font-size:15px;font-weight:700;color:#1a2733; }
-  .bell-duty-sub { font-size:11px;color:#7a8694;margin-top:2px; }
-  .bell-schedule { border-top:1px solid #eef1f3;padding-top:10px;margin-top:4px;display:flex;flex-direction:column;gap:4px; }
+  .bell-duty-name { font-size:15px;font-weight:700;color:var(--text); }
+  .bell-duty-sub { font-size:11px;color:var(--text2);margin-top:2px; }
+  .bell-schedule { border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;flex-direction:column;gap:4px; }
   .bell-row { display:flex;align-items:center;gap:8px;font-size:11px; }
   .bell-row-av { width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0; }
-  .bell-row-name { flex:1;color:#5a6470; }
-  .bell-row-day { font-size:10px;color:#a8b2bc; }
-  .bell-row.today .bell-row-name { color:#1a2733;font-weight:700; }
-  .bell-row.today .bell-row-day { color:#1b6fb8;font-weight:700; }
+  .bell-row-name { flex:1;color:var(--text2); }
+  .bell-row-day { font-size:10px;color:var(--text3); }
+  .bell-row.today .bell-row-name { color:var(--text);font-weight:700; }
+  .bell-row.today .bell-row-day { color:var(--blue);font-weight:700; }
 
 </style>
 </head>
@@ -548,10 +590,14 @@
 <div id="adminPanel" style="display:none;flex-direction:column;min-height:100vh">
   <div class="admin-bar">
     <span class="admin-bar-title">⚙ Панель администратора — Сергей</span>
-    <button class="admin-tab-btn active" id="atab-orders" onclick="adminShowTab('orders')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:#2a3a4c;color:#fff;cursor:pointer;font-family:inherit">📋 Заказы</button>
-    <button class="admin-tab-btn" id="atab-users" onclick="adminShowTab('users')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:transparent;color:#a8b2bc;cursor:pointer;font-family:inherit">👥 Сотрудники</button>
-    <button onclick="adminClearTestData()" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #b3372c;background:transparent;color:#ed6a5e;cursor:pointer;font-family:inherit" title="Полностью очистить общую очередь заказов в shared storage — удаляет ВСЕ тестовые данные">🧹 Очистить тестовые данные</button>
-    <button class="theme-toggle" onclick="toggleTheme()" id="adminThemeBtn" title="Сменить тему" style="margin-left:auto">
+    <button class="admin-tab-btn active" id="atab-orders" onclick="adminShowTab('orders')">📋 Заказы</button>
+    <button class="admin-tab-btn" id="atab-users" onclick="adminShowTab('users')">👥 Сотрудники</button>
+    <button class="admin-btn-danger" onclick="adminClearTestData()" title="Полностью очистить общую очередь заказов в shared storage — удаляет ВСЕ тестовые данные">🧹 Очистить тестовые данные</button>
+    <div class="user-topbar-clock" id="adminClock" style="border-left:1px solid var(--border);margin-left:2px">
+      <span class="utc-date" id="adminClockDate">—</span>
+      <span class="utc-time" id="adminClockTime">—:—:—</span>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="adminThemeBtn" title="Сменить тему">
       <span class="tt-icon tt-moon">🌙</span>
       <span class="tt-icon tt-sun">☀️</span>
       <span class="theme-toggle-label">Тёмная</span>
@@ -593,8 +639,8 @@
         <input type="date" id="aDeadline" style="width:140px">
       </div>
       <div class="af">
-        <label>Файл модели</label>
-        <input type="file" id="aFile" style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
+        <label>Файлы модели (можно несколько)</label>
+        <input type="file" id="aFile" multiple style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
       </div>
       <div class="af">
         <label>Комментарий</label>
@@ -625,16 +671,16 @@
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
       <thead>
-        <tr style="background:#f5f7f9">
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">№ заказа</th>
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Изделие</th>
-          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Пациент</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Источник</th>
-          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Кол.</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Исполнитель</th>
-          <th style="width:40px;padding:7px 10px;text-align:center;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">📎</th>
-          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea">Время</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#7a8694;border-bottom:1px solid #e2e6ea"></th>
+        <tr style="background:var(--surface2)">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Исполнитель</th>
+          <th style="width:40px;padding:7px 10px;text-align:center;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">📎</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)">Время</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border)"></th>
         </tr>
       </thead>
       <tbody id="adminPlacedBody"></tbody>
@@ -642,22 +688,22 @@
   </div>
 
   <!-- В РАБОТЕ -->
-  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+  <div class="admin-queue-wrap">
     <div class="admin-queue-title" style="color:#1b6fb8">
       🛠 В работе <span style="font-weight:400;color:#a8b2bc">(<span id="adminProgressCount">0</span>)</span>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
       <thead>
-        <tr style="background:#e8f3fc">
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">№ заказа</th>
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Изделие</th>
-          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Пациент</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Источник</th>
-          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Кол.</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Исполнитель</th>
-          <th style="width:160px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Этап / Статус</th>
-          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8">Взят</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#0c447c;border-bottom:1px solid #c9e3f8"></th>
+        <tr style="background:var(--blue-bg)">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Исполнитель</th>
+          <th style="width:160px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Этап / Статус</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)">Взят</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--blue);border-bottom:1px solid var(--border)"></th>
         </tr>
       </thead>
       <tbody id="adminProgressBody"></tbody>
@@ -665,22 +711,22 @@
   </div>
 
   <!-- ВЫПОЛНЕННЫЕ -->
-  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+  <div class="admin-queue-wrap">
     <div class="admin-queue-title" style="color:#2c6e1f">
       ✅ Выполненные заказы <span style="font-weight:400;color:#a8b2bc">(<span id="adminCompletedCount">0</span>)</span>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
       <thead>
-        <tr style="background:#eaf6e3">
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">№ заказа</th>
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Изделие</th>
-          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Пациент</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Источник</th>
-          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Кол.</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Исполнитель</th>
-          <th style="width:120px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Статус</th>
-          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0">Сдан</th>
-          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:#2c6e1f;border-bottom:1px solid #cdeac0"></th>
+        <tr style="background:var(--green-bg)">
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">№ заказа</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Изделие</th>
+          <th style="width:140px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Пациент</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Источник</th>
+          <th style="width:46px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Кол.</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Исполнитель</th>
+          <th style="width:120px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Статус</th>
+          <th style="width:60px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)">Сдан</th>
+          <th style="width:90px;padding:7px 10px;text-align:left;font-size:10px;color:var(--green);border-bottom:1px solid var(--border)"></th>
         </tr>
       </thead>
       <tbody id="adminCompletedBody"></tbody>
@@ -688,21 +734,21 @@
   </div>
 
   <!-- ВОЗВРАТЫ ОТ ОПЕРАТОРОВ -->
-  <div class="admin-queue-wrap" style="border-top:1px solid #e2e6ea">
+  <div class="admin-queue-wrap">
     <div class="admin-queue-title" style="color:#b3372c">
       🔁 Возвращённые заказы (не пошли в печать)
       <span class="admin-badge-new" id="returnsNewBadge" style="display:none;background:#b3372c">NEW</span>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
       <thead>
-        <tr style="background:#fde6e4">
-          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">№ заказа</th>
-          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Изделие</th>
-          <th style="width:130px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Пациент</th>
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Кем возвращён</th>
-          <th style="width:230px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Причина возврата</th>
-          <th style="width:70px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Время</th>
-          <th style="width:170px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5"></th>
+        <tr style="background:var(--red-bg)">
+          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">№ заказа</th>
+          <th style="width:100px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">Изделие</th>
+          <th style="width:130px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">Пациент</th>
+          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">Кем возвращён</th>
+          <th style="width:230px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">Причина возврата</th>
+          <th style="width:70px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)">Время</th>
+          <th style="width:170px;padding:7px 10px;text-align:left;font-size:10px;color:var(--red);border-bottom:1px solid var(--border)"></th>
         </tr>
       </thead>
       <tbody id="returnsBody"></tbody>
@@ -1033,9 +1079,9 @@
           <span class="f-lbl">Изделие:</span>
           <select id="fType" onchange="applyFilters()">
             <option value="">Все</option>
-            <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
-            <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
-            <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+            <option>Элайнер</option><option>Модель (форма)</option><option>Позиционер</option>
+            <option>Шаблон биосовместимый</option>
+            <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
           </select>
           <div class="f-sep"></div>
           <select id="fCat" onchange="applyFilters()">
@@ -1235,13 +1281,13 @@
           <label>Изделие</label>
           <select id="erType" style="width:200px">
             <optgroup label="Полимер">
-              <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
+              <option>Элайнер</option><option>Модель (форма)</option>
             </optgroup>
             <optgroup label="Биосовместимый полимер">
-              <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
+              <option>Позиционер</option><option>Шаблон биосовместимый</option>
             </optgroup>
             <optgroup label="Металл">
-              <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+              <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
             </optgroup>
           </select>
         </div>
@@ -1250,8 +1296,8 @@
           <input type="number" id="erQty" value="1" min="1" max="99" style="width:70px">
         </div>
         <div class="af">
-          <label>Файл модели</label>
-          <input type="file" id="erFile" style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
+          <label>Файлы модели (можно несколько)</label>
+          <input type="file" id="erFile" multiple style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
           <div id="erFileHint" style="font-size:10px;color:#7a8694;margin-top:3px"></div>
         </div>
         <div class="af" style="flex:1;min-width:220px">
@@ -1326,15 +1372,15 @@ const ASSEMBLY_ROUTE = ['Сборка', 'Передача в ОТК'];
 function baseStagesByType(type){
   if(type==='Брекеты вестибулярные') return SM;
   if(type==='Брекеты самолигирующие') return SMK;
-  if(['Аппарат (кольцо)'].includes(type)) return SM;
-  if(['Элайнер биосовместимый','Шаблон биосовместимый'].includes(type)) return SB;
+  if(['Аппарат','Аппарат (кольцо)'].includes(type)) return SM;
+  if(['Позиционер','Шаблон биосовместимый'].includes(type)) return SB;
   return SP;
 }
 function multiStagesByType(type){
   if(type==='Брекеты вестибулярные') return SM_MULTI;
   if(type==='Брекеты самолигирующие') return SMK_MULTI;
-  if(['Аппарат (кольцо)'].includes(type)) return SM_MULTI;
-  if(['Элайнер биосовместимый','Шаблон биосовместимый'].includes(type)) return SB_MULTI;
+  if(['Аппарат','Аппарат (кольцо)'].includes(type)) return SM_MULTI;
+  if(['Позиционер','Шаблон биосовместимый'].includes(type)) return SB_MULTI;
   return SP_MULTI;
 }
 
@@ -1358,12 +1404,11 @@ const MAT_CFG = {
   // Полимер
   'Элайнер':                  {matId:'abs',      ml:30,  unit:'мл', cat:'polymer'},
   'Модель (форма)':           {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
-  'Шаблон':                   {matId:'surgical', ml:50,  unit:'мл', cat:'polymer'},
-  'Позиционер':               {matId:'dental',   ml:50,  unit:'мл', cat:'polymer'},
   // Биосовместимый полимер
-  'Элайнер биосовместимый':   {matId:'biocomp',  ml:30,  unit:'мл', cat:'biocompat'},
+  'Позиционер':               {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
   'Шаблон биосовместимый':    {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
   // Металл
+  'Аппарат':                  {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Аппарат (кольцо)':         {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Брекеты вестибулярные':    {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Брекеты самолигирующие':   {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
@@ -1371,9 +1416,9 @@ const MAT_CFG = {
 
 // Категории для маршрута
 const CAT_MAP = {
-  'Элайнер':'polymer','Модель (форма)':'polymer','Шаблон':'polymer','Позиционер':'polymer',
-  'Элайнер биосовместимый':'biocompat','Шаблон биосовместимый':'biocompat',
-  'Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+  'Элайнер':'polymer','Модель (форма)':'polymer',
+  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
 };
 
 const MATERIALS = [
@@ -1383,7 +1428,7 @@ const MATERIALS = [
   { id:'surgical', label:'Surgical Guide',    sub:'Шаблоны',               icon:'◻', total:30000, unit:'мл', current:27100, color:'#43c0ac', bcolor:'#43c0ac', tcolor:'#0f7a6b', bgcolor:'#e1f5f1', isTime:false },
   { id:'metal',    label:'Металл (порошок)',  sub:'1 кг / 15 печатей',     icon:'⬡', total:15000, unit:'г',  current:11400, color:'#f8c750', bcolor:'#9a6400', tcolor:'#9a6400', bgcolor:'#fdf3df', isTime:false },
   { id:'gas',      label:'Газ',               sub:'1/7 балона / 1 печать', icon:'◎', total:700,   unit:'%',  current:520,   color:'#9aa3ab', bcolor:'#7a8694', tcolor:'#5a6470', bgcolor:'#eef1f3', isTime:false, isGas:true },
-  { id:'biocomp',  label:'Биосовместимый',    sub:'Элайнер/Шаблон биосовм.', icon:'◻', total:20000, unit:'мл', current:15000, color:'#d45a7e', bcolor:'#993556', tcolor:'#72243e', bgcolor:'#fbeaf0', isTime:false },
+  { id:'biocomp',  label:'Биосовместимый',    sub:'Позиционер/Шаблон биосовм.', icon:'◻', total:20000, unit:'мл', current:15000, color:'#d45a7e', bcolor:'#993556', tcolor:'#72243e', bgcolor:'#fbeaf0', isTime:false },
   { id:'calib',    label:'Калибровка принтеров', sub:'каждые 2 недели, вторник 10:00', icon:'⚙', total:100, unit:'%', current:100, color:'#534ab7', bcolor:'#534ab7', tcolor:'#3c3489', bgcolor:'#eee9fb', isTime:false, isCalib:true },
 ];
 
@@ -1563,18 +1608,20 @@ function fmtDeadline(iso){
 function isoDate(d){return d.toISOString().slice(0,10);}
 function statusBadges(o){
   let html='';
-  if(o.isReprint) html+='<span class="badge" style="background:#ed6a5e;color:#fff">⚡ Перепечатка</span>';
+  if(o.isReprint) html+='<span class="badge b-orange">⚡ Перепечатка</span>';
   if(o.urgent) html+='<span class="badge b-urgent">🔥 Срочно</span>';
   if(o.deadline) html+=`<span class="badge b-deadline">⏳ до ${fmtDeadline(o.deadline)}</span>`;
   if(o.delegatedFrom) html+=`<span class="badge b-deleg" title="Делегирован от ${o.delegatedFrom}">↪ Делегирован</span>`;
+  if(o.isFixed) html+='<span class="badge b-fixed">✎ Исправлен</span>';
   return html;
 }
 function statusBadgesCompact(o){
   let html='';
-  if(o.isReprint) html+='<span class="badge" style="background:#ed6a5e;color:#fff">Перепечатка</span>';
+  if(o.isReprint) html+='<span class="badge b-orange">Перепечатка</span>';
   if(o.urgent) html+='<span class="badge b-urgent">Срочно</span>';
   if(o.deadline) html+=`<span class="badge b-deadline">до ${fmtDeadline(o.deadline)}</span>`;
   if(o.delegatedFrom) html+=`<span class="badge b-deleg" title="Делегирован от ${o.delegatedFrom}">Делегирован</span>`;
+  if(o.isFixed) html+='<span class="badge b-fixed">Исправлен</span>';
   if(!html) html='<span style="color:var(--text3);font-size:10px">—</span>';
   return html;
 }
@@ -1752,7 +1799,7 @@ function renderMiniQueue(orders){
       </div>`;
     }).join('');
     return `<div class="mini-master">
-      <div class="mini-master-hd">№ ${mid} · ${ref.patient} · <span style="font-weight:400;color:var(--text3)">${ref.sup}</span></div>
+      <div class="mini-master-hd"><span class="badge b-blue master-pill">№ ${mid}</span> <span class="master-patient">${ref.patient}</span> <span style="font-weight:400;color:var(--text3);margin-left:auto">${ref.sup}</span></div>
       ${rows}
     </div>`;
   }).join('');
@@ -1797,14 +1844,17 @@ function renderQueueGroupRows(orders){
     const hasUrgent=subs.some(o=>o.urgent);
     const deadlines=[...new Set(subs.filter(o=>o.deadline).map(o=>fmtDeadline(o.deadline)))];
     html+=`<tr class="master-row">
-      <td style="padding-top:12px">№ ${masterId}</td>
-      <td style="padding-top:12px"></td>
-      <td style="color:var(--text2);font-weight:400;padding-top:12px">${ref.patient}</td>
-      <td style="color:var(--text3);font-weight:400;padding-top:12px">${ref.sup}</td>
-      <td style="padding-top:12px"></td>
-      <td style="padding-top:12px">${hasUrgent?'<span class="badge b-urgent">🔥 Срочно</span>':''}${deadlines.length?`<span class="badge b-deadline">⏳ до ${deadlines[0]}</span>`:''}</td>
-      <td style="padding-top:12px"></td>
-      <td style="padding-top:12px"></td>
+      <td colspan="8">
+        <div class="master-row-line">
+          <span class="badge b-blue master-pill">№ ${masterId}</span>
+          <span class="master-patient">${ref.patient}</span>
+          <span class="master-row-right">
+            <span class="master-sup">${ref.sup}</span>
+            ${hasUrgent?'<span class="badge b-urgent">🔥 Срочно</span>':''}
+            ${deadlines.length?`<span class="badge b-deadline">⏳ до ${deadlines[0]}</span>`:''}
+          </span>
+        </div>
+      </td>
     </tr>`;
     subs.forEach(o=>{
       const isDeleg=!!o.delegatedFrom;
@@ -1891,15 +1941,15 @@ function renderWork(){
         // Составной заказ — мастер-строка + подзаказы со смещением
         const ref=subs[0];
         wHtml+=`<tr class="master-row">
-          <td style="padding-top:12px">№ ${masterId}</td>
-          <td style="padding-top:12px"></td>
-          <td style="color:var(--text2);font-weight:400;padding-top:12px">${ref.patient}</td>
-          <td style="color:var(--text3);font-weight:400;padding-top:12px">${ref.sup}</td>
-          <td style="padding-top:12px"></td>
-          <td style="padding-top:12px"></td>
-          <td style="padding-top:12px"></td>
-          <td style="padding-top:12px"></td>
-          <td style="padding-top:12px"></td>
+          <td colspan="9">
+            <div class="master-row-line">
+              <span class="badge b-blue master-pill">№ ${masterId}</span>
+              <span class="master-patient">${ref.patient}</span>
+              <span class="master-row-right">
+                <span class="master-sup">${ref.sup}</span>
+              </span>
+            </div>
+          </td>
         </tr>`;
       }
       subs.forEach(o=>{
@@ -1963,7 +2013,9 @@ async function takeOrder(id){
   const myId = currentUser ? currentUser.id : null;
   const myName = currentUser ? currentUser.name : CURRENT_USER;
 
-  const stage = (o.delegHistory && typeof o.delegHistory.doneStage==='number') ? o.delegHistory.doneStage+1 : 0;
+  // Продолжаем с того этапа, на котором подзаказ уже находится (в т.ч. после делегирования
+  // или возврата в общую очередь) — только по-настоящему новый подзаказ (stage===-1) стартует с нуля.
+  const stage = o.stage>=0 ? o.stage : 0;
   const takenAt = Date.now();
 
   // АТОМАРНОЕ взятие: UPDATE сработает только если worker сейчас NULL в базе.
@@ -2080,16 +2132,16 @@ function openOrder(id){
     <div style="text-align:center"><div class="mk">На 1 шт.</div><div class="mv">${c.ml} ${c.unit}</div></div>
     <div style="text-align:right"><div class="mk">Итого (×${o.qty})</div><div class="mv" style="color:var(--blue)">${c.ml*o.qty} ${c.unit}</div></div>`:'';
 
-  if(o.file){
-    document.getElementById('oFileWrap').innerHTML=`
+  if(o.files && o.files.length){
+    document.getElementById('oFileWrap').innerHTML = o.files.map((f,i)=>`
       <div class="file-box">
         <div class="file-icon">📐</div>
         <div class="file-info">
-          <div class="file-name">${o.file.name}</div>
-          <div class="file-meta">Файл модели для печати · ${o.file.size}</div>
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">Файл модели для печати · ${f.size}</div>
         </div>
-        <button class="btn-download" onclick="downloadFile('${o.id}')">⬇ Скачать</button>
-      </div>`;
+        <button class="btn-download" onclick="downloadFile('${o.id}',${i})">⬇ Скачать</button>
+      </div>`).join('');
   } else {
     document.getElementById('oFileWrap').innerHTML='';
   }
@@ -2129,13 +2181,14 @@ function openOrder(id){
     <button class="btn-ghost" onclick="closeOrder()">Закрыть</button>`;
   document.getElementById('orderOverlay').classList.add('open');
 }
-function downloadFile(id){
+function downloadFile(id, idx){
   const o=myWork.find(x=>x.id===id);
-  if(!o||!o.file) return;
-  const blob=new Blob(['Имитация файла модели для печати: '+o.file.name+'\nЗаказ № '+o.masterId+' / подзаказ '+o.id+'\n\nЭто демонстрационный placeholder — в реальной системе здесь будет STL/3MF файл модели.'],{type:'text/plain'});
+  const f = o && o.files && o.files[idx||0];
+  if(!f) return;
+  const blob=new Blob(['Имитация файла модели для печати: '+f.name+'\nЗаказ № '+o.masterId+' / подзаказ '+o.id+'\n\nЭто демонстрационный placeholder — в реальной системе здесь будет STL/3MF файл модели.'],{type:'text/plain'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=o.file.name.replace(/\.stl$/,'.txt');
+  a.href=url; a.download=f.name.replace(/\.stl$/,'.txt');
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
@@ -2244,10 +2297,10 @@ function confirmDeleg(targetEmp){
   const idx=myWork.findIndex(x=>x.id===delegTargetId);
   if(idx===-1) return;
   const o=myWork[idx];
-  // Делегирование возвращает подзаказ в ОБЩУЮ ОЧЕРЕДЬ (не сразу получателю в работу) —
-  // получатель должен сначала открыть предпросмотр и увидеть от кого и что уже сделано.
-  // delegTo указывает кому именно адресован (получатель видит его как "свой" в очереди),
-  // worker сбрасывается, т.к. в работе его пока никто не держит.
+  // Делегирование конкретному сотруднику назначает подзаказ СРАЗУ ему в работу
+  // (попадает в "Мои заказы/подзаказы в работе" получателя, минуя общую очередь) —
+  // delegHistory остаётся как информационная справка (кто передал, что уже сделано),
+  // а o.stage НЕ сбрасывается, чтобы прогресс делегирующего не терялся.
   o.delegHistory = {
     doneStage: o.stage,
     note: o.comment || '',
@@ -2256,18 +2309,18 @@ function confirmDeleg(targetEmp){
     duration: o.takenAt ? (()=>{ const ms=Date.now()-o.takenAt; const m=Math.round(ms/60000); const h=Math.floor(m/60); return h>0?(h+'ч '+(m%60)+'м'):(m+'м'); })() : '-',
   };
   o.delegatedFrom = myName;
-  // delegatedTo хранит UUID получателя (для RLS и связи с profiles), targetEmp — имя для поиска
+  // delegatedTo хранит UUID получателя (для RLS и связи с profiles)
   const targetUser = Object.values(USERS).find(u=>u.name===targetEmp);
   o.delegatedTo = targetUser ? targetUser.id : null;
-  o._delegatedToName = targetEmp; // для локального тоста/отображения, не пишется в БД напрямую
-  o.worker = null;
-  o.workerId = null;
-  o.takenAt = null;
+  o.worker = targetEmp;
+  o.workerId = targetUser ? targetUser.id : null;
+  o.takenAt = Date.now();
+  o.currentStageStart = Date.now();
   myWork.splice(idx,1);
-  queue.unshift(o);
   closeDeleg();
   closeOrder();
   renderWork();
+  showToast('↪ Подзаказ '+o.id+' передан сотруднику '+targetEmp);
 }
 function confirmDelegToQueue(){
   const idx=myWork.findIndex(x=>x.id===delegTargetId);
@@ -2278,7 +2331,6 @@ function confirmDelegToQueue(){
   o.delegHistory = null;
   o.delegatedFrom = null;
   o.delegatedTo = null;
-  o._delegatedToName = null;
   o.worker = null;
   o.workerId = null;
   o.takenAt = null;
@@ -2609,7 +2661,7 @@ function dbRowToOrder(r){
     id: r.id, masterId: r.master_id, type: r.type, cat: r.cat, patient: r.patient,
     sup: r.sup, qty: r.qty, arrived: r.arrived, urgent: r.urgent, isReprint: r.is_reprint,
     deadline: r.deadline, comment: r.comment||'',
-    file: r.file_name ? {name:r.file_name, size:r.file_size, attached:r.file_attached} : null,
+    files: (r.files && r.files.length) ? r.files : (r.file_name ? [{name:r.file_name, size:r.file_size}] : []),
     worker: r.worker ? (USERS[r.worker] ? USERS[r.worker].name : r.worker) : null,
     workerId: r.worker,
     stage: r.stage, takenAt: r.taken_at ? new Date(r.taken_at).getTime() : null,
@@ -2629,8 +2681,10 @@ function orderToDbRow(o){
     id: o.id, master_id: o.masterId, type: o.type, cat: o.cat, patient: o.patient,
     sup: o.sup, qty: o.qty, arrived: o.arrived, urgent: !!o.urgent, is_reprint: !!o.isReprint,
     deadline: o.deadline || null, comment: o.comment || '',
-    file_name: o.file ? o.file.name : null, file_size: o.file ? o.file.size : null,
-    file_attached: o.file ? !!o.file.attached : false,
+    files: o.files || [],
+    file_name: (o.files && o.files[0]) ? o.files[0].name : null,
+    file_size: (o.files && o.files[0]) ? o.files[0].size : null,
+    file_attached: !!(o.files && o.files.length),
     worker: o.workerId || null,
     stage: o.stage, taken_at: o.takenAt ? new Date(o.takenAt).toISOString() : null,
     current_stage_start: o.currentStageStart ? new Date(o.currentStageStart).toISOString() : null,
@@ -2685,7 +2739,7 @@ function dbRowToReturn(r){
     id: r.order_id, masterId: r.master_id, type: r.type, patient: r.patient,
     qty: r.qty, cat: r.cat, sup: r.sup, deadline: r.deadline,
     urgent: r.urgent, isReprint: r.is_reprint, itemComment: r.item_comment||'',
-    file: r.file_name ? {name:r.file_name, size:r.file_size, attached:r.file_attached} : null,
+    files: (r.files && r.files.length) ? r.files : (r.file_name ? [{name:r.file_name, size:r.file_size}] : []),
     returnedBy: r.returned_by, reason: r.reason, comment: r.comment||'',
     returnedAt: r.returned_at_text, resolved: r.resolved, resolvedAt: r.resolved_at_text,
     _dbId: r.id,
@@ -2701,8 +2755,10 @@ async function insertReturnToDb(rec){
     order_id: rec.id, master_id: rec.masterId, type: rec.type, patient: rec.patient,
     qty: rec.qty, cat: rec.cat, sup: rec.sup, deadline: rec.deadline || null,
     urgent: !!rec.urgent, is_reprint: !!rec.isReprint, item_comment: rec.itemComment||'',
-    file_name: rec.file ? rec.file.name : null, file_size: rec.file ? rec.file.size : null,
-    file_attached: rec.file ? !!rec.file.attached : false,
+    files: rec.files || [],
+    file_name: (rec.files && rec.files[0]) ? rec.files[0].name : null,
+    file_size: (rec.files && rec.files[0]) ? rec.files[0].size : null,
+    file_attached: !!(rec.files && rec.files.length),
     returned_by: rec.returnedBy, reason: rec.reason, comment: rec.comment,
     returned_at_text: rec.returnedAt,
   });
@@ -2742,7 +2798,7 @@ async function confirmReturn(){
     id: o.id, masterId: o.masterId, type: o.type, patient: o.patient,
     qty: o.qty, cat: o.cat, sup: o.sup, deadline: o.deadline || null,
     urgent: !!o.urgent, isReprint: !!o.isReprint, itemComment: o.comment || '',
-    file: o.file || null,
+    files: o.files || [],
     returnedBy: currentUser ? currentUser.name : 'Сотрудник',
     reason, comment, returnedAt: nowTime(),
   };
@@ -2780,26 +2836,26 @@ function renderReturnsPanel(){
     );
     const rows = filtered.map((r)=>{
       const isResolved = !!r.resolved;
-      const tc = isResolved ? 'var(--text)' : '#791f1f';
-      const tc2 = isResolved ? 'var(--text2)' : '#791f1f';
+      const tc = isResolved ? 'var(--text)' : 'var(--red)';
+      const tc2 = isResolved ? 'var(--text2)' : 'var(--red)';
       const rowBg = isResolved ? 'var(--surface2)' : 'transparent';
       const statusCell = isResolved
         ? `<span class="badge b-green" style="font-size:10px">✓ Решено</span>`
         : `<div style="display:flex;gap:5px;flex-wrap:wrap">
-             <button onclick="openEditReturnModal(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">✎ Редактировать</button>
-             <button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #2c6e1f;background:#eaf6e3;color:#2c6e1f;cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>
+             <button onclick="openEditReturnModal(${r._dbId})" style="font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600">✎ Редактировать</button>
+             <button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--green);background:var(--green-bg);color:var(--green);cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>
            </div>`;
-      return `<tr style="border-bottom:1px solid #f3c9c5;background:${rowBg}">
+      return `<tr style="border-bottom:1px solid var(--border);background:${rowBg}">
         <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${tc}">${r.id}</td>
-        <td style="padding:7px 10px;font-size:11px"><span style="background:#fff;border:1px solid #f3c9c5;color:${tc};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${r.type}</span></td>
+        <td style="padding:7px 10px;font-size:11px"><span class="badge b-red">${r.type}</span></td>
         <td style="padding:7px 10px;font-size:11px;color:${tc2}">${r.patient}</td>
         <td style="padding:7px 10px;font-size:11px;color:${tc2};font-weight:600">${r.returnedBy}</td>
         <td style="padding:7px 10px;font-size:11px;color:${tc2}">${r.reason}${r.comment?' — '+r.comment:''}</td>
-        <td style="padding:7px 10px;font-size:11px;color:#a8788c">${r.returnedAt}</td>
+        <td style="padding:7px 10px;font-size:11px;color:var(--text3)">${r.returnedAt}</td>
         <td style="padding:7px 10px">${statusCell}</td>
       </tr>`;
     }).join('');
-    tbody.innerHTML = rows || `<tr><td colspan="7" style="padding:16px;text-align:center;color:#c79a9a;font-size:12px">${q ? 'Ничего не найдено' : 'Возвратов нет'}</td></tr>`;
+    tbody.innerHTML = rows || `<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3);font-size:12px">${q ? 'Ничего не найдено' : 'Возвратов нет'}</td></tr>`;
     const badge = document.getElementById('returnsNewBadge');
     const unresolvedCount = returns.filter(r=>!r.resolved).length;
     if(badge) badge.style.display = unresolvedCount ? 'inline-block' : 'none';
@@ -2829,8 +2885,8 @@ function openEditReturnModal(dbId){
   document.getElementById('erQty').value = r.qty || 1;
   document.getElementById('erComment').value = r.itemComment || '';
   document.getElementById('erFile').value = '';
-  document.getElementById('erFileHint').textContent = r.file && r.file.name
-    ? 'Текущий файл: ' + r.file.name + (r.file.size ? ' (' + r.file.size + ')' : '')
+  document.getElementById('erFileHint').textContent = (r.files && r.files.length)
+    ? 'Текущие файлы: ' + r.files.map(f=>f.name+(f.size?' ('+f.size+')':'')).join(', ')
     : 'Файл не был прикреплён — возможно, поэтому подзаказ вернулся';
   document.getElementById('editReturnOverlay').classList.add('open');
 }
@@ -2855,12 +2911,13 @@ async function submitEditReturn(){
   const comment = document.getElementById('erComment').value.trim();
 
   const fileInput = document.getElementById('erFile');
-  let attachedFile = r.file || null;
-  if(fileInput && fileInput.files && fileInput.files[0]){
-    const f = fileInput.files[0];
-    const sizeKb = f.size/1024;
-    const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
-    attachedFile = { name:f.name, size:sizeStr, attached:true };
+  let attachedFiles = r.files || [];
+  if(fileInput && fileInput.files && fileInput.files.length){
+    attachedFiles = Array.from(fileInput.files).map(f=>{
+      const sizeKb = f.size/1024;
+      const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
+      return { name:f.name, size:sizeStr };
+    });
   }
 
   const now = new Date();
@@ -2870,7 +2927,7 @@ async function submitEditReturn(){
     arrived: now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
     worker: null, workerId: null, stage: -1,
     urgent, deadline, comment, isReprint, isFixed: true,
-    file: attachedFile, delegatedFrom: null, _createdAt: Date.now(),
+    files: attachedFiles, delegatedFrom: null, _createdAt: Date.now(),
   };
   adminOrders = adminOrders.filter(o=>o.id!==order.id);
   adminOrders.unshift(order);
@@ -3101,10 +3158,14 @@ function startTopbarClock(){
   if(clockInterval) clearInterval(clockInterval);
   function tick(){
     const now = new Date();
-    const dateEl = document.getElementById('utDate');
-    const timeEl = document.getElementById('utTime');
-    if(dateEl) dateEl.textContent = now.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-    if(timeEl) timeEl.textContent = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const dateStr = now.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const timeStr = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    [['utDate','utTime'],['adminClockDate','adminClockTime']].forEach(([dId,tId])=>{
+      const dateEl = document.getElementById(dId);
+      const timeEl = document.getElementById(tId);
+      if(dateEl) dateEl.textContent = dateStr;
+      if(timeEl) timeEl.textContent = timeStr;
+    });
   }
   tick();
   clockInterval = setInterval(tick, 1000);
@@ -3164,6 +3225,8 @@ async function handleRealtimeOrderChange(payload){
     }
     if(inQueue===-1 && o.delegatedTo===currentUser.id && o.delegatedFrom){
       showToast('↪ Вам делегирован подзаказ '+o.id+' от '+o.delegatedFrom, 6000);
+    } else if(inQueue===-1 && o.isFixed){
+      showToast('✎ Подзаказ '+o.id+' исправлен администратором и снова в очереди', 6000);
     } else if(inQueue===-1){
       showToast('📥 Новый заказ — подзаказ '+o.id+' в очереди');
     }
@@ -3195,6 +3258,7 @@ async function initAdmin(){
   renderReturnsPanel();
   // Добавляем первую пустую строку изделия
   addOrderItem();
+  startTopbarClock();
   // Realtime вместо polling — мгновенные обновления при действиях сотрудников
   subscribeToOrdersRealtime();
 }
@@ -3211,9 +3275,9 @@ let adminOrders = [];
 let adminCounter = 1139;
 
 const MAT_CFG_CATS = {
-  'Элайнер':'polymer','Модель (форма)':'polymer','Шаблон':'polymer','Позиционер':'polymer',
-  'Элайнер биосовместимый':'biocompat','Шаблон биосовместимый':'biocompat',
-  'Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+  'Элайнер':'polymer','Модель (форма)':'polymer',
+  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
 };
 
 const TYPE_SUFFIX = {
@@ -3229,13 +3293,13 @@ function addOrderItem(){
   row.innerHTML = `
     <select name="item-type" style="height:32px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit;flex:1">
       <optgroup label="Полимер">
-        <option>Элайнер</option><option>Модель (форма)</option><option>Шаблон</option><option>Позиционер</option>
+        <option>Элайнер</option><option>Модель (форма)</option>
       </optgroup>
       <optgroup label="Биосовместимый полимер">
-        <option>Элайнер биосовместимый</option><option>Шаблон биосовместимый</option>
+        <option>Позиционер</option><option>Шаблон биосовместимый</option>
       </optgroup>
       <optgroup label="Металл">
-        <option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+        <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
       </optgroup>
     </select>
     <input type="number" name="item-qty" value="1" min="1" max="99" style="width:56px;height:32px;padding:0 6px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit" placeholder="шт.">
@@ -3281,7 +3345,7 @@ function checkAutoAssembly(masterId){
     urgent: subOrders.some(o=>o.urgent),
     deadline: ref.deadline,
     comment: 'Автоматически создана — подзаказ(ы) заказа №'+masterId+' готовы к сборке ('+[...types].join(', ')+').',
-    file: null,
+    files: [],
     delegatedFrom: null,
     _isAssembly: true,
   };
@@ -3320,14 +3384,15 @@ async function adminPostOrderInner(){
   const rows = Array.from(wrap.children).filter(el=>el.tagName==='DIV' && el.querySelector('[name=item-type]'));
   if(!rows.length){ alert('Добавьте хотя бы одно изделие'); return; }
 
-  // Прикреплённый файл (опционально, один файл на весь заказ)
+  // Прикреплённые файлы (опционально, можно несколько, общие на весь заказ)
   const fileInput = document.getElementById('aFile');
-  let attachedFile = null;
-  if(fileInput && fileInput.files && fileInput.files[0]){
-    const f = fileInput.files[0];
-    const sizeKb = f.size/1024;
-    const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
-    attachedFile = { name:f.name, size:sizeStr, attached:true };
+  const attachedFiles = [];
+  if(fileInput && fileInput.files && fileInput.files.length){
+    Array.from(fileInput.files).forEach(f=>{
+      const sizeKb = f.size/1024;
+      const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
+      attachedFiles.push({ name:f.name, size:sizeStr });
+    });
   }
 
   const now = new Date();
@@ -3344,7 +3409,7 @@ async function adminPostOrderInner(){
     const id = masterId+'-'+suf+(usedSuffixes[suf]>1?usedSuffixes[suf]:'');
     const order = {id, masterId, type, cat, patient, sup, qty, arrived,
       worker:null, stage:-1, urgent, deadline, comment, isReprint,
-      file: attachedFile || {name: (masterId+'_'+type.toLowerCase().replace(/[^а-яa-z0-9]/gi,'_'))+'.stl', size:'—'},
+      files: attachedFiles.length ? attachedFiles : [{name: (masterId+'_'+type.toLowerCase().replace(/[^а-яa-z0-9]/gi,'_'))+'.stl', size:'—'}],
       delegatedFrom:null, _createdAt: Date.now()};
     created.push(order);
   });
@@ -3421,34 +3486,35 @@ function renderAdminOrderTable(tbodyId, list, mode){
   if(!tbody) return;
   const rows = list.map(o=>{
     const workerBadge = o.worker
-      ? `<span style="font-size:10px;color:#2c6e1f;font-weight:700">${o.worker}</span>`
-      : `<span style="font-size:10px;color:#9a6400">в очереди</span>`;
-    const urgBadge = o.urgent ? ' <span style="background:#fde6e4;color:#b3372c;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">СРОЧНО</span>' : '';
-    const reprintBadge = o.isReprint ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ПЕРЕПЕЧАТКА</span>' : '';
-    const assemblyBadge = o._isAssembly ? ' <span style="background:#eaf6e3;color:#2c6e1f;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">СБОРКА</span>' : '';
-    const waitBadge = (o.finishedAt && o.finishedAsAssemblyReady && !o._isAssembly) ? ' <span style="background:#eee9fb;color:#3c3489;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ЖДЁТ СБОРКИ</span>' : '';
-    const fixedBadge = o.isFixed ? ' <span style="background:#fff3cd;color:#7a5c00;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px">ИСПРАВЛЕН</span>' : '';
-    const fileBadge = o.file && o.file.attached ? `<span title="${o.file.name}" style="font-size:11px">📎</span>` : '';
+      ? `<span class="badge b-green" style="font-size:9px">${o.worker}</span>`
+      : `<span class="badge b-amber" style="font-size:9px">в очереди</span>`;
+    const urgBadge = o.urgent ? ' <span class="badge b-urgent" style="font-size:9px">СРОЧНО</span>' : '';
+    const reprintBadge = o.isReprint ? ' <span class="badge b-orange" style="font-size:9px">ПЕРЕПЕЧАТКА</span>' : '';
+    const assemblyBadge = o._isAssembly ? ' <span class="badge b-green" style="font-size:9px">СБОРКА</span>' : '';
+    const waitBadge = (o.finishedAt && o.finishedAsAssemblyReady && !o._isAssembly) ? ' <span class="badge b-purple" style="font-size:9px">ЖДЁТ СБОРКИ</span>' : '';
+    const fixedBadge = o.isFixed ? ' <span class="badge b-fixed" style="font-size:9px">ИСПРАВЛЕН</span>' : '';
+    const fileBadge = (o.files && o.files.length) ? `<span title="${o.files.map(f=>f.name).join(', ')}" style="font-size:11px">📎${o.files.length>1?'×'+o.files.length:''}</span>` : '';
     const stageInfo = mode==='placed' ? '—' : (o.finishedAt ? '✓ завершён' : (st(o)[o.stage] || '—'));
-    const delegInfo = o.delegatedFrom ? `<span style="color:#5b4a9e;font-weight:700">↪ Делегирован от ${o.delegatedFrom}</span>` : '';
-    const detailBtn = `<button onclick="event.stopPropagation();openAdminDetail('${o.id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">👁 Карточка</button>`;
-    const deleteBtn = `<button onclick="event.stopPropagation();adminDeleteOrder('${o.id}')" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #ed6a5e;background:#fde6e4;color:#b3372c;cursor:pointer;font-family:inherit;font-weight:600">✕ Удалить</button>`;
+    const delegInfo = o.delegatedFrom ? `<span style="color:var(--purple);font-weight:700">↪ Делегирован от ${o.delegatedFrom}</span>` : '';
+    const detailBtn = `<button onclick="event.stopPropagation();openAdminDetail('${o.id}')" style="font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600">👁 Карточка</button>`;
+    const deleteBtn = `<button onclick="event.stopPropagation();adminDeleteOrder('${o.id}')" style="font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--red);background:var(--red-bg);color:var(--red);cursor:pointer;font-family:inherit;font-weight:600">✕ Удалить</button>`;
     const delBtn = mode==='placed'
       ? deleteBtn
       : `<div style="display:flex;gap:5px">${detailBtn}${deleteBtn}</div>`;
-    return `<tr style="border-bottom:1px solid #eef1f3;cursor:pointer" onclick="openAdminDetail('${o.id}')">
+    const catBadgeCls = o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber';
+    return `<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="openAdminDetail('${o.id}')">
       <td style="padding:7px 10px;font-size:12px;font-weight:700">${o.id}${urgBadge}${reprintBadge}${assemblyBadge}${waitBadge}${fixedBadge}</td>
-      <td style="padding:7px 10px;font-size:11px"><span style="background:${o.cat==='polymer'?'#e8f3fc':o.cat==='assembly'?'#eaf6e3':'#fdf3df'};color:${o.cat==='polymer'?'#0c447c':o.cat==='assembly'?'#2c6e1f':'#633806'};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.type}</span></td>
-      <td style="padding:7px 10px;font-size:11px;color:#5a6470;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
-      <td style="padding:7px 10px;font-size:11px"><span style="background:#eef1f3;color:#5a6470;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${o.sup}</span></td>
+      <td style="padding:7px 10px;font-size:11px"><span class="badge ${catBadgeCls}">${o.type}</span></td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}</td>
+      <td style="padding:7px 10px;font-size:11px"><span class="badge b-gray">${o.sup}</span></td>
       <td style="padding:7px 10px;font-size:12px">${o.qty} шт.</td>
       <td style="padding:7px 10px">${workerBadge}</td>
-      ${mode!=='placed' ? `<td style="padding:7px 10px;font-size:11px;color:#1b6fb8;font-weight:600">${delegInfo || stageInfo}${delegInfo && !o.finishedAt ? `<div style="font-size:10px;color:#1b6fb8;font-weight:400;margin-top:2px">${stageInfo}</div>` : ''}</td>` : `<td style="padding:7px 10px;text-align:center">${fileBadge}</td>`}
-      <td style="padding:7px 10px;font-size:11px;color:#a8b2bc">${o.arrived}</td>
+      ${mode!=='placed' ? `<td style="padding:7px 10px;font-size:11px;color:var(--blue);font-weight:600">${delegInfo || stageInfo}${delegInfo && !o.finishedAt ? `<div style="font-size:10px;color:var(--blue);font-weight:400;margin-top:2px">${stageInfo}</div>` : ''}</td>` : `<td style="padding:7px 10px;text-align:center">${fileBadge}</td>`}
+      <td style="padding:7px 10px;font-size:11px;color:var(--text3)">${o.arrived}</td>
       <td style="padding:7px 10px">${delBtn}</td>
     </tr>`;
   }).join('');
-  tbody.innerHTML = rows || '<tr><td colspan="9" style="padding:20px;text-align:center;color:#a8b2bc;font-size:12px">Пусто</td></tr>';
+  tbody.innerHTML = rows || '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Пусто</td></tr>';
 }
 
 /* ─── ADMIN ORDER DETAIL CARD ─── */
