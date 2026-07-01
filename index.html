@@ -557,6 +557,11 @@
     <button class="admin-tab-btn active" id="atab-orders" onclick="adminShowTab('orders')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:#2a3a4c;color:#fff;cursor:pointer;font-family:inherit">📋 Заказы</button>
     <button class="admin-tab-btn" id="atab-users" onclick="adminShowTab('users')" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #3a4a5c;background:transparent;color:#a8b2bc;cursor:pointer;font-family:inherit">👥 Сотрудники</button>
     <button onclick="adminClearTestData()" style="font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid #b3372c;background:transparent;color:#ed6a5e;cursor:pointer;font-family:inherit" title="Полностью очистить общую очередь заказов в shared storage — удаляет ВСЕ тестовые данные">🧹 Очистить тестовые данные</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="adminThemeBtn" title="Сменить тему" style="margin-left:auto">
+      <span class="tt-icon tt-moon">🌙</span>
+      <span class="tt-icon tt-sun">☀️</span>
+      <span class="theme-toggle-label">Тёмная</span>
+    </button>
     <button class="admin-logout" onclick="doLogout()">Выйти</button>
   </div>
 
@@ -609,6 +614,13 @@
     </div>
     <div>
       <button class="btn-post" onclick="adminPostOrder()">✓ Разместить заказ</button>
+    </div>
+  </div>
+
+  <div class="admin-form-wrap" style="align-items:flex-end">
+    <div class="af">
+      <label>🔍 Поиск по заказам</label>
+      <input type="text" id="adminOrderSearch" placeholder="№ заказа, пациент, изделие..." oninput="renderAdminQueue();renderReturnsPanel()" style="width:280px">
     </div>
   </div>
 
@@ -696,7 +708,7 @@
           <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Кем возвращён</th>
           <th style="width:230px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Причина возврата</th>
           <th style="width:70px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5">Время</th>
-          <th style="width:110px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5"></th>
+          <th style="width:170px;padding:7px 10px;text-align:left;font-size:10px;color:#791f1f;border-bottom:1px solid #f3c9c5"></th>
         </tr>
       </thead>
       <tbody id="returnsBody"></tbody>
@@ -875,7 +887,7 @@
           <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Сменить тему">
             <span class="tt-icon tt-moon">🌙</span>
             <span class="tt-icon tt-sun">☀️</span>
-            <span id="themeLabel">Тёмная</span>
+            <span id="themeLabel" class="theme-toggle-label">Тёмная</span>
           </button>
           <div class="view-switcher">
           <button class="vs-btn active" id="vs-table" onclick="setView('table')" title="Таблица">
@@ -1561,8 +1573,9 @@ let currentView = localStorage.getItem('viewMode')||'table';
 /* ─── THEME ─── */
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
-  const label = document.getElementById('themeLabel');
-  if(label) label.textContent = theme==='dark' ? 'Светлая' : 'Тёмная';
+  document.querySelectorAll('.theme-toggle-label').forEach(label=>{
+    label.textContent = theme==='dark' ? 'Светлая' : 'Тёмная';
+  });
   try{ localStorage.setItem('theme', theme); } catch(e){}
 }
 function toggleTheme(){
@@ -2569,6 +2582,8 @@ async function tryTakeOrderInDb(id, workerId, extra){
 function dbRowToReturn(r){
   return {
     id: r.order_id, masterId: r.master_id, type: r.type, patient: r.patient,
+    qty: r.qty, cat: r.cat, sup: r.sup, deadline: r.deadline,
+    urgent: r.urgent, isReprint: r.is_reprint, itemComment: r.item_comment||'',
     returnedBy: r.returned_by, reason: r.reason, comment: r.comment||'',
     returnedAt: r.returned_at_text, resolved: r.resolved, resolvedAt: r.resolved_at_text,
     _dbId: r.id,
@@ -2582,6 +2597,8 @@ async function loadReturnsFromStorage(){
 async function insertReturnToDb(rec){
   const { error } = await sb.from('returns').insert({
     order_id: rec.id, master_id: rec.masterId, type: rec.type, patient: rec.patient,
+    qty: rec.qty, cat: rec.cat, sup: rec.sup, deadline: rec.deadline || null,
+    urgent: !!rec.urgent, is_reprint: !!rec.isReprint, item_comment: rec.itemComment||'',
     returned_by: rec.returnedBy, reason: rec.reason, comment: rec.comment,
     returned_at_text: rec.returnedAt,
   });
@@ -2618,6 +2635,8 @@ async function confirmReturn(){
 
   const returnRecord = {
     id: o.id, masterId: o.masterId, type: o.type, patient: o.patient,
+    qty: o.qty, cat: o.cat, sup: o.sup, deadline: o.deadline || null,
+    urgent: !!o.urgent, isReprint: !!o.isReprint, itemComment: o.comment || '',
     returnedBy: currentUser ? currentUser.name : 'Сотрудник',
     reason, comment, returnedAt: nowTime(),
   };
@@ -2633,19 +2652,33 @@ async function confirmReturn(){
   showToast('↩ Подзаказ '+o.id+' возвращён поставщику: '+reason);
 }
 
+let returnsCache = [];
+
 function renderReturnsPanel(){
   const tbody = document.getElementById('returnsBody');
   if(!tbody) return;
   loadReturnsFromStorage().then(returns=>{
     returns = returns || [];
-    const rows = returns.map((r)=>{
+    returnsCache = returns;
+    const q = getAdminSearchQuery();
+    const filtered = returns.filter(r=>
+      !q ||
+      (r.masterId||'').toLowerCase().includes(q) ||
+      (r.id||'').toLowerCase().includes(q) ||
+      (r.patient||'').toLowerCase().includes(q) ||
+      (r.type||'').toLowerCase().includes(q)
+    );
+    const rows = filtered.map((r)=>{
       const isResolved = !!r.resolved;
       const tc = isResolved ? 'var(--text)' : '#791f1f';
       const tc2 = isResolved ? 'var(--text2)' : '#791f1f';
       const rowBg = isResolved ? 'var(--surface2)' : 'transparent';
       const statusCell = isResolved
         ? `<span class="badge b-green" style="font-size:10px">✓ Решено</span>`
-        : `<button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #2c6e1f;background:#eaf6e3;color:#2c6e1f;cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>`;
+        : `<div style="display:flex;gap:5px;flex-wrap:wrap">
+             <button onclick="adminRepostReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #1b6fb8;background:#e8f3fc;color:#1b6fb8;cursor:pointer;font-family:inherit;font-weight:600">🔄 Заново</button>
+             <button onclick="resolveReturn(${r._dbId})" style="font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #2c6e1f;background:#eaf6e3;color:#2c6e1f;cursor:pointer;font-family:inherit;font-weight:600">✓ Решено</button>
+           </div>`;
       return `<tr style="border-bottom:1px solid #f3c9c5;background:${rowBg}">
         <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${tc}">${r.id}</td>
         <td style="padding:7px 10px;font-size:11px"><span style="background:#fff;border:1px solid #f3c9c5;color:${tc};padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700">${r.type}</span></td>
@@ -2656,7 +2689,7 @@ function renderReturnsPanel(){
         <td style="padding:7px 10px">${statusCell}</td>
       </tr>`;
     }).join('');
-    tbody.innerHTML = rows || '<tr><td colspan="7" style="padding:16px;text-align:center;color:#c79a9a;font-size:12px">Возвратов нет</td></tr>';
+    tbody.innerHTML = rows || `<tr><td colspan="7" style="padding:16px;text-align:center;color:#c79a9a;font-size:12px">${q ? 'Ничего не найдено' : 'Возвратов нет'}</td></tr>`;
     const badge = document.getElementById('returnsNewBadge');
     const unresolvedCount = returns.filter(r=>!r.resolved).length;
     if(badge) badge.style.display = unresolvedCount ? 'inline-block' : 'none';
@@ -2667,6 +2700,37 @@ async function resolveReturn(dbId){
   await markReturnResolvedInDb(dbId);
   renderReturnsPanel();
   showToast('✓ Возврат отмечен как решённый');
+}
+
+/* ─── ПОВТОРНОЕ РАЗМЕЩЕНИЕ ВОЗВРАЩЁННОГО ПОДЗАКАЗА ─── */
+async function adminRepostReturn(dbId){
+  const r = returnsCache.find(x=>x._dbId===dbId);
+  if(!r) return;
+  const ok = await showConfirm(
+    'Подзаказ '+r.id+' (заказ №'+r.masterId+', '+r.type+') будет снова добавлен в очередь на печать со статусом «в очереди».',
+    '🔄 Разместить заново?'
+  );
+  if(!ok) return;
+
+  const now = new Date();
+  const order = {
+    id: r.id, masterId: r.masterId, type: r.type,
+    cat: r.cat || MAT_CFG_CATS[r.type] || 'polymer',
+    patient: r.patient, sup: r.sup || 'Менеджер', qty: r.qty || 1,
+    arrived: now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
+    worker: null, workerId: null, stage: -1,
+    urgent: !!r.urgent, deadline: r.deadline || null,
+    comment: r.itemComment || '', isReprint: !!r.isReprint,
+    file: null, delegatedFrom: null, _createdAt: Date.now(),
+  };
+  adminOrders = adminOrders.filter(o=>o.id!==order.id);
+  adminOrders.unshift(order);
+  await upsertOrderToDb(order);
+  await markReturnResolvedInDb(dbId);
+
+  renderAdminQueue();
+  renderReturnsPanel();
+  showToast('🔄 Подзаказ '+r.id+' снова размещён в очереди на печать');
 }
 
 /* ─── ADMIN TABS ─── */
@@ -3154,15 +3218,29 @@ async function adminPostOrderInner(){
   showToast('✅ Заказ №'+masterId+' размещён ('+created.length+' подзаказ(ов))');
 }
 
+/* ─── ADMIN SEARCH ─── */
+function getAdminSearchQuery(){
+  const el = document.getElementById('adminOrderSearch');
+  return el ? el.value.trim().toLowerCase() : '';
+}
+function orderMatchesSearch(o, q){
+  if(!q) return true;
+  return (o.masterId||'').toLowerCase().includes(q) ||
+    (o.id||'').toLowerCase().includes(q) ||
+    (o.patient||'').toLowerCase().includes(q) ||
+    (o.type||'').toLowerCase().includes(q);
+}
+
 function renderAdminQueue(){
+  const q = getAdminSearchQuery();
   // Размещённые — никто не взял в работу
-  const placed = adminOrders.filter(o=>!o.worker);
+  const placed = adminOrders.filter(o=>!o.worker && orderMatchesSearch(o,q));
   // Для каждого masterId проверяем — есть ли уже ЗАВЕРШЁННАЯ задача "Сборка заказа"
   const assemblyDoneMasterIds = new Set(
     adminOrders.filter(o=>o._isAssembly && o.finishedAt).map(o=>o.masterId)
   );
   // В работе — взят, но ещё не передан в ОТК (включая подзаказы готовые к сборке/находящиеся в сборке)
-  const inProgress = adminOrders.filter(o=>o.worker && !o.finishedAt);
+  const inProgress = adminOrders.filter(o=>o.worker && !o.finishedAt && orderMatchesSearch(o,q));
   // Выполненные — реально завершены (finishedAt) И это либо финальный этап с передачей в ОТК
   // (одноматериальный заказ без отдельной сборки), либо сама задача "Сборка заказа" завершена,
   // либо подзаказ ждал сборки, но сборка его заказа уже завершена (значит и подзаказ фактически закрыт)
@@ -3171,12 +3249,12 @@ function renderAdminQueue(){
       o._isAssembly ||
       !o.finishedAsAssemblyReady ||
       assemblyDoneMasterIds.has(o.masterId)
-    )
+    ) && orderMatchesSearch(o,q)
   );
   // Подзаказ завершён, ждёт сборки, но задача сборки его заказа ЕЩЁ не завершена — реально "в работе"
   const waitingAssembly = adminOrders.filter(o=>
     o.worker && o.finishedAt && o.finishedAsAssemblyReady &&
-    !o._isAssembly && !assemblyDoneMasterIds.has(o.masterId)
+    !o._isAssembly && !assemblyDoneMasterIds.has(o.masterId) && orderMatchesSearch(o,q)
   );
 
   renderAdminOrderTable('adminPlacedBody', placed, 'placed');

@@ -158,6 +158,13 @@ create table if not exists returns (
   master_id text,
   type text,
   patient text,
+  qty integer,                    -- снимок исходного подзаказа — нужен для повторного размещения
+  cat text,
+  sup text,
+  deadline date,
+  urgent boolean default false,
+  is_reprint boolean default false,
+  item_comment text default '',   -- исходный комментарий к подзаказу (не путать с comment — это причина возврата)
   returned_by text not null,      -- ФИО оператора
   reason text not null,
   comment text default '',
@@ -166,6 +173,15 @@ create table if not exists returns (
   resolved_at_text text,
   created_at timestamptz default now()
 );
+
+-- Если таблица returns уже существовала в БД до добавления повторного размещения — доносим колонки
+alter table returns add column if not exists qty integer;
+alter table returns add column if not exists cat text;
+alter table returns add column if not exists sup text;
+alter table returns add column if not exists deadline date;
+alter table returns add column if not exists urgent boolean default false;
+alter table returns add column if not exists is_reprint boolean default false;
+alter table returns add column if not exists item_comment text default '';
 
 alter table returns enable row level security;
 
