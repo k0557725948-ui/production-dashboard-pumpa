@@ -77,7 +77,6 @@
   [data-theme="dark"] .admin-form-wrap select,
   [data-theme="dark"] .admin-form-wrap input { background:var(--surface2);border-color:var(--border2);color:var(--text); }
   [data-theme="dark"] .master-row td, [data-theme="dark"] .master-row-pill { background:var(--surface2); }
-  [data-theme="dark"] .kanban-card { background:var(--surface); }
   [data-theme="dark"] .bell-popup { background:var(--surface);border-color:var(--border2); }
   [data-theme="dark"] .bell-popup-hd { background:var(--surface2); }
   [data-theme="dark"] .fixed-modal { background:#1c1c1e;border:1px solid var(--border); }
@@ -174,24 +173,24 @@
 
   /* Badge — pill-shaped, tinted bg + matching border, saturated text in light / light text in dark */
   .badge { display: inline-flex; align-items:center; font-size: 10px; padding: 3px 9px; border-radius: var(--radius-pill); font-weight: 700; white-space: nowrap; border: 1px solid currentColor; }
-  .b-blue   { background: var(--blue-bg);   color: var(--blue); }
-  .b-amber  { background: var(--amber-bg);  color: var(--amber); }
-  .b-green  { background: var(--green-bg);  color: var(--green); }
-  .b-gray   { background: var(--gray-bg);   color: var(--gray); }
-  .b-pink   { background: var(--pink-bg);   color: var(--pink); }
+  .b-blue   { background: rgba(0,113,227,.08);  color: #0062cc; }
+  .b-amber  { background: rgba(255,149,0,.09);  color: #c93400; }
+  .b-green  { background: rgba(52,199,89,.09);  color: #248a3d; }
+  .b-gray   { background: rgba(0,0,0,.05);      color: rgba(0,0,0,.45); }
+  .b-pink   { background: rgba(255,45,85,.07);  color: #c0003b; }
   .b-teal   { background: var(--teal-bg);   color: var(--teal); }
-  .b-purple { background: var(--purple-bg); color: var(--purple); }
-  .b-red    { background: var(--red-bg);    color: var(--red); }
-  .b-orange { background: var(--orange-bg); color: var(--orange); }
-  [data-theme="dark"] .b-blue   { color: var(--blue-mid); }
-  [data-theme="dark"] .b-amber  { color: var(--amber-mid); }
-  [data-theme="dark"] .b-green  { color: var(--green-mid); }
-  [data-theme="dark"] .b-gray   { color: var(--gray-mid); }
-  [data-theme="dark"] .b-pink   { color: var(--pink-mid); }
+  .b-purple { background: rgba(175,82,222,.08); color: #6e1fa3; }
+  .b-red    { background: rgba(255,59,48,.08);  color: #c0001a; }
+  .b-orange { background: rgba(255,149,0,.09);  color: #b25000; }
+  [data-theme="dark"] .b-blue   { background: rgba(96,165,250,.12);  color: #93c5fd; }
+  [data-theme="dark"] .b-amber  { background: rgba(251,191,36,.1);   color: #fbbf24; }
+  [data-theme="dark"] .b-green  { background: rgba(52,211,153,.1);   color: #6ee7b7; }
+  [data-theme="dark"] .b-gray   { background: rgba(255,255,255,.08); color: rgba(255,255,255,.45); }
+  [data-theme="dark"] .b-pink   { background: rgba(244,114,182,.1);  color: #f472b6; }
   [data-theme="dark"] .b-teal   { color: var(--teal-mid); }
-  [data-theme="dark"] .b-purple { color: var(--purple-mid); }
-  [data-theme="dark"] .b-red    { color: var(--red-mid); }
-  [data-theme="dark"] .b-orange { color: var(--orange-mid); }
+  [data-theme="dark"] .b-purple { background: rgba(167,139,250,.1);  color: #c4b5fd; }
+  [data-theme="dark"] .b-red    { background: rgba(248,113,113,.1);  color: #fca5a5; }
+  [data-theme="dark"] .b-orange { background: rgba(251,146,60,.1);   color: #fdba74; }
 
   /* Dots */
   .dots { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; }
@@ -290,11 +289,11 @@
   .order-sub { font-size: 10px; color: var(--text2); }
 
   /* Status badges */
-  .b-urgent { background: var(--red-bg); color: var(--red); }
-  .b-deadline { background: var(--amber-bg); color: var(--amber); }
+  .b-urgent { background: rgba(255,59,48,.08); color: #c0001a; }
+  .b-deadline { background: rgba(255,149,0,.09); color: #b25000; }
   .b-deleg { background: var(--purple-bg); color: var(--purple); }
-  [data-theme="dark"] .b-urgent { color: var(--red-mid); }
-  [data-theme="dark"] .b-deadline { color: var(--amber-mid); }
+  [data-theme="dark"] .b-urgent { background: rgba(248,113,113,.1); color: #fca5a5; }
+  [data-theme="dark"] .b-deadline { background: rgba(251,146,60,.1); color: #fdba74; }
   [data-theme="dark"] .b-deleg { color: var(--purple-mid); }
   .b-fixed { background: #fff3cd; color: #7a5c00; }
   [data-theme="dark"] .b-fixed { background: rgba(255,211,10,.12); color: #ffd60a; }
@@ -328,52 +327,65 @@
   .vs-btn.active { background:var(--surface);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.08); }
   .vs-btn:hover:not(.active) { color:var(--text); }
 
-  /* ─── KANBAN CARDS VIEW ─── */
-  .kanban-wrap { display:flex;flex-direction:column;gap:10px;padding:12px 14px; }
-  .kanban-master-hd { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px;display:flex;align-items:center;gap:6px; }
-  .kanban-group { margin-bottom:6px; }
-  .kanban-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px; }
-  .kanban-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden; }
-  .kanban-card:hover { box-shadow:0 2px 8px rgba(20,40,80,.10);border-color:var(--blue-mid); }
-  .kanban-card::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:8px 0 0 8px; }
-  .kanban-card.cat-polymer::before { background:var(--blue-mid); }
-  .kanban-card.cat-biocompat::before { background:#d45a7e; }
-  .kanban-card.cat-metal::before { background:var(--amber-mid); }
-  .kanban-card.cat-assembly::before { background:var(--green-mid); }
-  .kanban-card.cat-delegated::before { background:var(--purple); }
-  .kc-top { display:flex;align-items:flex-start;justify-content:space-between;gap:6px; }
-  .kc-id { font-size:11px;font-weight:700;color:var(--text); }
-  .kc-badges { display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end; }
-  .kc-patient { font-size:12px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-  .kc-type { font-size:11px;color:var(--text2); }
-  .kc-meta { display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:2px; }
-  .kc-source { font-size:10px;color:var(--text3); }
-  .kc-time { font-size:10px;color:var(--text3); }
-  .kc-progress { height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px; }
-  .kc-progress-fill { height:4px;border-radius:2px;transition:width .3s; }
-  .kc-stage { font-size:10px;font-weight:600;color:var(--blue);margin-top:2px; }
-  .kc-actions { display:flex;gap:5px;margin-top:4px; }
-  .kc-btn-take { flex:1;font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;text-align:center; }
-  .kc-btn-take:hover { filter:brightness(.97); }
-  .kc-btn-adv { flex:1;font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600; }
-  .kc-btn-adv.finish { border-color:var(--green);background:var(--green-bg);color:var(--green); }
-  .kc-btn-deleg { font-size:10px;padding:4px 10px;border-radius:var(--radius-pill);border:1px solid var(--purple);background:var(--purple-bg);color:var(--purple);cursor:pointer;font-family:inherit;font-weight:600; }
+  /* ─── CARDS VIEW (kanban, two columns) ─── */
+  .cv-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  .cv-col { display:flex;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);background:var(--surface); }
+  .cv-hd { display:flex;align-items:center;gap:8px;padding:11px 14px;font-size:12px;font-weight:700;color:var(--text); }
+  .cv-hd-queue { background:rgba(0,113,227,.09); }
+  .cv-hd-work  { background:rgba(52,199,89,.09); }
+  [data-theme="dark"] .cv-hd-queue { background:rgba(96,165,250,.09);color:#60a5fa; }
+  [data-theme="dark"] .cv-hd-work  { background:rgba(52,211,153,.09);color:#34d399; }
+  .cv-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#0071e3; }
+  .cv-hd-work .cv-dot { background:#34c759; }
+  [data-theme="dark"] .cv-hd-queue .cv-dot { background:#60a5fa; }
+  [data-theme="dark"] .cv-hd-work  .cv-dot { background:#34d399; }
+  .cv-title { flex:1; }
+  .cv-pill { font-size:10px;font-weight:700;padding:2px 9px;border-radius:var(--radius-pill);flex-shrink:0;background:rgba(0,113,227,.16);color:#0062cc; }
+  .cv-hd-work .cv-pill { background:rgba(52,199,89,.18);color:#248a3d; }
+  [data-theme="dark"] .cv-hd-queue .cv-pill { background:rgba(96,165,250,.18);color:#60a5fa; }
+  [data-theme="dark"] .cv-hd-work  .cv-pill { background:rgba(52,211,153,.18);color:#34d399; }
+  .cards-wrap { flex:1;background:rgba(0,0,0,.02);padding:10px;display:flex;flex-direction:column;min-height:60px; }
+  [data-theme="dark"] .cards-wrap { background:rgba(255,255,255,.015); }
 
-  /* ─── MINI BADGE VIEW ─── */
-  .mini-wrap { display:flex;flex-direction:column;gap:6px;padding:10px 14px; }
-  .mini-master { margin-bottom:2px; }
-  .mini-master-hd { font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:4px 0 4px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);margin-bottom:4px; }
-  .mini-sub { display:flex;align-items:center;gap:6px;padding:5px 0 5px 14px;border-bottom:1px dashed var(--border); }
-  .mini-sub:last-child { border-bottom:none;margin-bottom:4px; }
-  .mini-arrow { font-size:10px;color:var(--text3);flex-shrink:0; }
-  .mini-id { font-size:10px;color:var(--text2);min-width:60px;flex-shrink:0; }
-  .mini-patient { font-size:11px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-  .mini-stage { font-size:10px;color:var(--blue);font-weight:600;white-space:nowrap; }
-  .mini-btns { display:flex;gap:4px;flex-shrink:0; }
-  .mini-btn { font-size:10px;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
-  .mini-btn.finish { border-color:var(--green);background:var(--green-bg);color:var(--green); }
-  .mini-btn.deleg { border-color:var(--purple);background:var(--purple-bg);color:var(--purple); }
-  .mini-btn.preview { border-color:var(--text3);background:var(--surface2);color:var(--text2); }
+  /* Order block ("mc" = master card) */
+  .mc { border-radius:14px;border:1.5px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.07);overflow:hidden;margin-bottom:10px;background:#fff; }
+  .mc:last-child { margin-bottom:0; }
+  .mc.urgent { border-color:rgba(255,59,48,.25);box-shadow:0 1px 3px rgba(255,59,48,.1),0 0 0 3px rgba(255,59,48,.06); }
+  [data-theme="dark"] .mc { background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09); }
+  [data-theme="dark"] .mc.urgent { border-color:rgba(255,59,48,.3);box-shadow:0 0 0 3px rgba(255,59,48,.08); }
+
+  .mc-hd { display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fafafa;border-bottom:1.5px solid rgba(0,0,0,.06); }
+  [data-theme="dark"] .mc-hd { background:rgba(255,255,255,.03);border-bottom-color:rgba(255,255,255,.09); }
+  .mc-num { display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(0,113,227,.09);border:1px solid rgba(0,113,227,.18);color:#0062cc;white-space:nowrap;flex-shrink:0; }
+  [data-theme="dark"] .mc-num { background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.2);color:#60a5fa; }
+  .mc-patient { font-size:12px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .mc-badges { display:flex;gap:3px;flex-wrap:wrap;align-items:center;flex-shrink:0; }
+  .mc-source { font-size:10px;color:rgba(0,0,0,.3);flex-shrink:0;white-space:nowrap; }
+  [data-theme="dark"] .mc-source { color:rgba(255,255,255,.3); }
+
+  .sub-card { display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border-bottom:1px solid rgba(0,0,0,.05); }
+  .sub-card:last-child { border-bottom:none; }
+  [data-theme="dark"] .sub-card { background:transparent;border-bottom-color:rgba(255,255,255,.05); }
+  .sc-id { font-size:10px;color:rgba(0,0,0,.3);min-width:54px;flex-shrink:0; }
+  [data-theme="dark"] .sc-id { color:rgba(255,255,255,.3); }
+  .sc-stage { font-size:10px;font-weight:600;color:var(--blue);white-space:nowrap;flex-shrink:0; }
+  .sc-dots { display:flex;gap:2px;align-items:center;flex-shrink:0; }
+  .sc-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+  .sc-dot.dg { background:#34c759; }
+  .sc-dot.de { background:rgba(0,0,0,.1); }
+  [data-theme="dark"] .sc-dot.dg { background:#34d399; }
+  [data-theme="dark"] .sc-dot.de { background:rgba(255,255,255,.12); }
+  .sc-count { font-size:9px;color:var(--text3);white-space:nowrap;flex-shrink:0; }
+  .sc-actions { display:flex;gap:5px;margin-left:auto;flex-shrink:0; }
+
+  .mc-btn-take { font-size:10px;padding:4px 11px;border-radius:var(--radius-pill);border:1px solid var(--blue);background:rgba(0,113,227,.08);color:var(--blue);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
+  .mc-btn-take:hover { filter:brightness(.97); }
+  .mc-btn-done { font-size:10px;padding:4px 11px;border-radius:var(--radius-pill);border:1px solid var(--green-mid);background:rgba(52,199,89,.08);color:var(--green-mid);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap; }
+  .mc-btn-done:hover { filter:brightness(.97); }
+  .mc-btn-deleg { font-size:10px;padding:4px 9px;border-radius:var(--radius-pill);border:1px solid rgba(0,0,0,.12);background:rgba(0,0,0,.05);color:rgba(0,0,0,.45);cursor:pointer;font-family:inherit;font-weight:600; }
+  [data-theme="dark"] .mc-btn-take { border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08);color:#60a5fa; }
+  [data-theme="dark"] .mc-btn-done { border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#34d399; }
+  [data-theme="dark"] .mc-btn-deleg { border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:rgba(255,255,255,.45); }
 
   /* Order grouping styles — compact single-line master row */
   .master-row td { background: var(--surface2); padding:9px 12px; border-bottom:1px solid var(--border); }
@@ -493,6 +505,8 @@
     .mb-name { width: 90px; }
 
     .b24-strip { height: 3px; }
+
+    .cv-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 480px) {
@@ -948,17 +962,13 @@
             <span id="themeLabel" class="theme-toggle-label">Тёмная</span>
           </button>
           <div class="view-switcher">
-          <button class="vs-btn active" id="vs-table" onclick="setView('table')" title="Таблица">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-            Таблица
-          </button>
-          <button class="vs-btn" id="vs-kanban" onclick="setView('kanban')" title="Карточки">
+          <button class="vs-btn active" id="vs-kanban" onclick="setView('kanban')" title="Карточки">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>
             Карточки
           </button>
-          <button class="vs-btn" id="vs-mini" onclick="setView('mini')" title="Компактно">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            Компактно
+          <button class="vs-btn" id="vs-table" onclick="setView('table')" title="Таблица">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            Таблица
           </button>
         </div>
         </div>
@@ -988,91 +998,87 @@
         </table>
       </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-            Очередь — свободные заказы и подзаказы
+      <!-- ВИД КАРТОЧКИ (kanban, по умолчанию) -->
+      <div id="cardsView" class="cv-grid">
+        <div class="cv-col">
+          <div class="cv-hd cv-hd-queue">
+            <span class="cv-dot"></span>
+            <span class="cv-title">Очередь</span>
+            <span class="cv-pill" id="cvQueueCount">0</span>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <select id="qFilterCat" onchange="renderWork()" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
-              <option value="">Все материалы</option>
-              <option value="polymer">Полимер</option>
-              <option value="biocompat">Биосовместимый</option>
-              <option value="metal">Металл</option>
-              <option value="assembly">Сборка</option>
-            </select>
-            <select id="qSortUrgency" onchange="renderWork()" title="Сортировка по срочности" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
-              <option value="">Сортировка: по поступлению</option>
-              <option value="urgent">🔥 Сначала срочные</option>
-            </select>
-            <span class="card-hint">«Взять» — принять в работу</span>
-          </div>
+          <div class="cards-wrap" id="cvQueue"></div>
         </div>
-        <table>
-          <thead><tr>
-            <th style="width:90px">№ заказа</th>
-            <th style="width:96px">Изделие</th>
-            <th style="width:130px">Пациент</th>
-            <th style="width:70px">Источник</th>
-            <th style="width:46px">Кол.</th>
-            <th style="width:80px">Статус</th>
-            <th style="width:70px">Поступил</th>
-            <th style="width:68px"></th>
-          </tr></thead>
-          <tbody id="qBody"></tbody>
-        </table>
-        <div class="kanban-wrap" id="qKanban" style="display:none"></div>
-        <div class="mini-wrap" id="qMini" style="display:none"></div>
+        <div class="cv-col">
+          <div class="cv-hd cv-hd-work">
+            <span class="cv-dot"></span>
+            <span class="cv-title">Мои заказы / подзаказы в работе</span>
+            <span class="cv-pill" id="cvWorkCount">0</span>
+          </div>
+          <div class="cards-wrap" id="cvWork"></div>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1b6fb8" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Мои заказы/подзаказы в работе
+      <!-- ВИД ТАБЛИЦА -->
+      <div id="tableView" style="display:none">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              Очередь — свободные заказы и подзаказы
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <select id="qFilterCat" onchange="renderWork()" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
+                <option value="">Все материалы</option>
+                <option value="polymer">Полимер</option>
+                <option value="biocompat">Биосовместимый</option>
+                <option value="metal">Металл</option>
+                <option value="assembly">Сборка</option>
+              </select>
+              <select id="qSortUrgency" onchange="renderWork()" title="Сортировка по срочности" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
+                <option value="">Сортировка: по поступлению</option>
+                <option value="urgent">🔥 Сначала срочные</option>
+              </select>
+              <span class="card-hint">«Взять» — принять в работу</span>
+            </div>
           </div>
-          <span class="card-hint">нажмите на строку для деталей, или кнопку → для перехода</span>
+          <table>
+            <thead><tr>
+              <th style="width:90px">№ заказа</th>
+              <th style="width:96px">Изделие</th>
+              <th style="width:130px">Пациент</th>
+              <th style="width:70px">Источник</th>
+              <th style="width:46px">Кол.</th>
+              <th style="width:80px">Статус</th>
+              <th style="width:70px">Поступил</th>
+              <th style="width:68px"></th>
+            </tr></thead>
+            <tbody id="qBody"></tbody>
+          </table>
         </div>
-        <table>
-          <thead><tr>
-            <th style="width:78px">№ заказа</th>
-            <th style="width:90px">Изделие</th>
-            <th style="width:108px">Пациент</th>
-            <th style="width:64px">Источник</th>
-            <th style="width:100px">Прогресс</th>
-            <th style="width:80px">Этап</th>
-            <th style="width:58px">Расход</th>
-            <th style="width:64px">Статус</th>
-            <th style="width:108px"></th>
-          </tr></thead>
-          <tbody id="wBody"></tbody>
-        </table>
-        <div class="kanban-wrap" id="wKanban" style="display:none"></div>
-        <div class="mini-wrap" id="wMini" style="display:none"></div>
-      </div>
 
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2c6e1f" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            Завершено сегодня
+        <div class="card" style="margin-top:14px">
+          <div class="card-hd">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1b6fb8" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Мои заказы/подзаказы в работе
+            </div>
+            <span class="card-hint">нажмите на строку для деталей, или кнопку → для перехода</span>
           </div>
+          <table>
+            <thead><tr>
+              <th style="width:78px">№ заказа</th>
+              <th style="width:90px">Изделие</th>
+              <th style="width:108px">Пациент</th>
+              <th style="width:64px">Источник</th>
+              <th style="width:100px">Прогресс</th>
+              <th style="width:80px">Этап</th>
+              <th style="width:58px">Расход</th>
+              <th style="width:64px">Статус</th>
+              <th style="width:108px"></th>
+            </tr></thead>
+            <tbody id="wBody"></tbody>
+          </table>
         </div>
-        <table>
-          <thead><tr>
-            <th style="width:78px">№ заказа</th>
-            <th style="width:84px">Изделие</th>
-            <th style="width:120px">Пациент</th>
-            <th style="width:68px">Источник</th>
-            <th style="width:80px">Расход</th>
-            <th style="width:62px">Сдан</th>
-            <th style="width:82px">Время выполн.</th>
-          </tr></thead>
-          <tbody id="dBody"></tbody>
-        </table>
-        <div class="kanban-wrap" id="dKanban" style="display:none"></div>
-        <div class="mini-wrap" id="dMini" style="display:none"></div>
       </div>
     </div>
 
@@ -1710,7 +1716,7 @@ function renderCounters(){
 }
 
 /* ─── VIEW MODE ─── */
-let currentView = localStorage.getItem('viewMode')||'table';
+let currentView = localStorage.getItem('viewMode')||'kanban';
 
 /* ─── THEME ─── */
 function applyTheme(theme){
@@ -1728,19 +1734,15 @@ function toggleTheme(){
 function setView(v){
   currentView = v;
   try{ localStorage.setItem('viewMode', v); } catch(e){}
-  ['table','kanban','mini'].forEach(m=>{
+  ['table','kanban'].forEach(m=>{
     const btn = document.getElementById('vs-'+m);
     if(btn) btn.classList.toggle('active', m===v);
   });
   renderWork();
 }
 
-function catClass(o){
-  if(o.delegatedFrom) return 'cat-delegated';
-  if(o.cat==='polymer') return 'cat-polymer';
-  if(o.cat==='biocompat') return 'cat-biocompat';
-  if(o.cat==='assembly') return 'cat-assembly';
-  return 'cat-metal';
+function catBadge(o){
+  return o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber';
 }
 
 /* ─── СОРТИРОВКА ПО СРОЧНОСТИ ─── */
@@ -1759,119 +1761,81 @@ function sortByUrgency(list){
   });
 }
 
-function renderKanbanQueue(orders){
+/* Сводные бейджи для заголовка блока заказа (по всем подзаказам группы) */
+function groupHeaderBadges(subs){
+  let html='';
+  if(subs.some(o=>o.isReprint)) html+='<span class="badge b-orange">⚡ Перепечатка</span>';
+  if(subs.some(o=>o.urgent)) html+='<span class="badge b-urgent">🔥 Срочно</span>';
+  const deadlines=[...new Set(subs.filter(o=>o.deadline).map(o=>fmtDeadline(o.deadline)))];
+  if(deadlines.length) html+=`<span class="badge b-deadline">⏳ до ${deadlines[0]}</span>`;
+  return html;
+}
+
+/* ─── КАРТОЧКИ: очередь (слева) ─── */
+function renderCardsQueue(orders){
   if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет подзаказов</div>';
   const groups={};
   orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
   return Object.entries(groups).map(([mid, subs])=>{
     const ref=subs[0];
-    const cards=subs.map(o=>{
-      const isDeleg=!!o.delegatedFrom;
-      const btn=isDeleg
-        ?`<button class="kc-btn-take" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁 Просмотр</button>`
-        :`<button class="kc-btn-take" onclick="event.stopPropagation();takeOrder('${o.id}')">▶ Взять</button>`;
-      return `<div class="kanban-card ${catClass(o)}" onclick="${isDeleg?`openDelegPreview('${o.id}')`:''}">
-        <div class="kc-top">
-          <span class="kc-id">${o.id}</span>
-          <div class="kc-badges">${statusBadgesCompact(o)}</div>
-        </div>
-        <div class="kc-patient">${o.patient}</div>
-        <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span> · ${o.qty} шт.</div>
-        <div class="kc-meta"><span class="kc-source">${o.sup}</span><span class="kc-time">${o.arrived}</span></div>
-        <div class="kc-actions">${btn}</div>
-      </div>`;
-    }).join('');
-    return `<div class="kanban-group">
-      <div class="kanban-master-hd">№ ${mid} · ${ref.patient} · <span style="color:var(--text3);font-weight:400">${ref.sup}</span></div>
-      <div class="kanban-cards">${cards}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderKanbanWork(orders){
-  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет активных подзаказов</div>';
-  return `<div class="kanban-cards">`+orders.map(o=>{
-    const stages=st(o); const isLast=o.stage===stages.length-1;
-    const pct=Math.round(((o.stage+1)/stages.length)*100);
-    const advBtn=isLast
-      ?`<button class="kc-btn-adv finish" onclick="event.stopPropagation();finishOrder('${o.id}')">✓ ОТК</button>`
-      :`<button class="kc-btn-adv" onclick="event.stopPropagation();advStage('${o.id}')">→ ${stages[o.stage+1]||''}</button>`;
-    return `<div class="kanban-card ${catClass(o)}" onclick="openOrder('${o.id}')">
-      <div class="kc-top">
-        <span class="kc-id">${o.id}</span>
-        <div class="kc-badges">${statusBadgesCompact(o)}</div>
-      </div>
-      <div class="kc-patient">${o.patient}</div>
-      <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></div>
-      <div class="kc-progress"><div class="kc-progress-fill" style="width:${pct}%;background:${isLast?'var(--green-mid)':'var(--blue-mid)'}"></div></div>
-      <div class="kc-stage">${stages[o.stage]||'—'}</div>
-      <div class="kc-actions">${advBtn}<button class="kc-btn-deleg" onclick="event.stopPropagation();openDeleg('${o.id}')">↪</button></div>
-    </div>`;
-  }).join('')+`</div>`;
-}
-
-function renderKanbanDone(orders){
-  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Пока ничего</div>';
-  return `<div class="kanban-cards">`+orders.map(o=>`
-    <div class="kanban-card ${catClass(o)}" style="cursor:default">
-      <div class="kc-top"><span class="kc-id">${o.id}</span><span class="badge b-green" style="font-size:9px">✓ ОТК</span></div>
-      <div class="kc-patient">${o.patient}</div>
-      <div class="kc-type"><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></div>
-      <div class="kc-meta"><span class="kc-source">${consume(o)}</span><span class="kc-time">${o.duration||'—'}</span></div>
-    </div>`).join('')+`</div>`;
-}
-
-function renderMiniQueue(orders){
-  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Нет подзаказов</div>';
-  const groups={};
-  orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
-  return Object.entries(groups).map(([mid, subs])=>{
-    const ref=subs[0];
+    const hasUrgent=subs.some(o=>o.urgent);
     const rows=subs.map(o=>{
       const isDeleg=!!o.delegatedFrom;
       const btn=isDeleg
-        ?`<button class="mini-btn preview" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁</button>`
-        :`<button class="mini-btn" onclick="event.stopPropagation();takeOrder('${o.id}')">▶ Взять</button>`;
-      return `<div class="mini-sub">
-        <span class="mini-arrow">↳</span>
-        <span class="mini-id">${o.id}</span>
-        <span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}" style="font-size:9px;flex-shrink:0">${o.type}</span>
-        <span class="mini-patient">${o.qty} шт. ${statusBadgesCompact(o)}</span>
-        <div class="mini-btns">${btn}</div>
+        ?`<button class="mc-btn-take" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁 Просмотр</button>`
+        :`<button class="mc-btn-take" onclick="event.stopPropagation();takeOrder('${o.id}')">▶ Взять</button>`;
+      return `<div class="sub-card" ${isDeleg?`onclick="openDelegPreview('${o.id}')" style="cursor:pointer"`:''}>
+        <span class="sc-id">${o.id}</span>
+        <span class="badge ${catBadge(o)}">${o.type}</span>
+        <span class="sc-count">${o.qty} шт.</span>
+        <div class="sc-actions">${btn}</div>
       </div>`;
     }).join('');
-    return `<div class="mini-master">
-      <div class="mini-master-hd"><span class="badge b-blue master-pill">№ ${mid}</span> <span class="master-patient">${ref.patient}</span> <span style="font-weight:400;color:var(--text3);margin-left:auto">${ref.sup}</span></div>
+    return `<div class="mc${hasUrgent?' urgent':''}">
+      <div class="mc-hd">
+        <span class="mc-num">№ ${mid}</span>
+        <span class="mc-patient">${ref.patient}</span>
+        <div class="mc-badges">${groupHeaderBadges(subs)}</div>
+        <span class="mc-source">${ref.sup}</span>
+      </div>
       ${rows}
     </div>`;
   }).join('');
 }
 
-function renderMiniWork(orders){
-  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Нет активных</div>';
-  return orders.map(o=>{
-    const stages=st(o); const isLast=o.stage===stages.length-1;
-    const advBtn=isLast
-      ?`<button class="mini-btn finish" onclick="event.stopPropagation();finishOrder('${o.id}')">✓</button>`
-      :`<button class="mini-btn" onclick="event.stopPropagation();advStage('${o.id}')">→</button>`;
-    return `<div class="mini-sub" style="padding-left:0;border-bottom:1px solid var(--border)">
-      <span class="mini-id" style="min-width:72px">${o.id}</span>
-      <span class="mini-patient" onclick="openOrder('${o.id}')" style="cursor:pointer">${o.patient}</span>
-      <span class="mini-stage">${stages[o.stage]||'—'}</span>
-      <div class="mini-btns">${advBtn}<button class="mini-btn deleg" onclick="event.stopPropagation();openDeleg('${o.id}')">↪</button></div>
+/* ─── КАРТОЧКИ: в работе (справа) ─── */
+function renderCardsWork(orders){
+  if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет активных подзаказов</div>';
+  const groups={};
+  orders.forEach(o=>{ if(!groups[o.masterId]) groups[o.masterId]=[]; groups[o.masterId].push(o); });
+  return Object.entries(groups).map(([mid, subs])=>{
+    const ref=subs[0];
+    const hasUrgent=subs.some(o=>o.urgent);
+    const rows=subs.map(o=>{
+      const stages=st(o); const isLast=o.stage===stages.length-1;
+      const dots=stages.map((_,i)=>`<span class="sc-dot ${i<=o.stage?'dg':'de'}"></span>`).join('');
+      const advBtn=isLast
+        ?`<button class="mc-btn-done" onclick="event.stopPropagation();finishOrder('${o.id}')">✓ Готово</button>`
+        :`<button class="mc-btn-take" onclick="event.stopPropagation();advStage('${o.id}')">→ ${stages[o.stage+1]||''}</button>`;
+      return `<div class="sub-card" onclick="openOrder('${o.id}')" style="cursor:pointer">
+        <span class="sc-id">${o.id}</span>
+        <span class="badge ${catBadge(o)}">${o.type}</span>
+        <span class="sc-stage">${stages[o.stage]||'—'}</span>
+        <div class="sc-dots">${dots}</div>
+        <span class="sc-count">${o.stage+1} из ${stages.length}</span>
+        <div class="sc-actions">${advBtn}<button class="mc-btn-deleg" onclick="event.stopPropagation();openDeleg('${o.id}')" title="Делегировать">↪</button></div>
+      </div>`;
+    }).join('');
+    return `<div class="mc${hasUrgent?' urgent':''}">
+      <div class="mc-hd">
+        <span class="mc-num">№ ${mid}</span>
+        <span class="mc-patient">${ref.patient}</span>
+        <div class="mc-badges">${groupHeaderBadges(subs)}</div>
+        <span class="mc-source">${ref.sup}</span>
+      </div>
+      ${rows}
     </div>`;
   }).join('');
-}
-
-function renderMiniDone(orders){
-  if(!orders.length) return '<div class="empty-row" style="padding:12px;text-align:center;color:var(--text3)">Пока ничего</div>';
-  return orders.map(o=>`
-    <div class="mini-sub" style="padding-left:0;border-bottom:1px solid var(--border)">
-      <span class="mini-id" style="min-width:72px">${o.id}</span>
-      <span class="mini-patient">${o.patient}</span>
-      <span class="mini-stage" style="color:var(--green)">${o.finishedAt||'—'}</span>
-      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${o.duration||''}</span>
-    </div>`).join('');
 }
 
 /* ─── WORK TABLES ─── */
@@ -1935,26 +1899,17 @@ function renderWork(){
   document.getElementById('sConsume').textContent=Math.round(tc);
 
   // Применяем вид
-  const v = currentView||'table';
-  ['vs-table','vs-kanban','vs-mini'].forEach(id=>{
+  const v = currentView||'kanban';
+  ['vs-table','vs-kanban'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.classList.toggle('active', id==='vs-'+v);
   });
 
-  // Показываем/скрываем нужные контейнеры
-  ['qBody','wBody','dBody'].forEach(id=>{
-    const el=document.getElementById(id);
-    const tbl=el&&el.closest('table');
-    if(tbl) tbl.style.display=v==='table'?'':'none';
-  });
-  ['qKanban','wKanban','dKanban','qMini','wMini','dMini'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.display='none';
-  });
-  if(v==='kanban'){
-    ['qKanban','wKanban','dKanban'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=''; });
-  } else if(v==='mini'){
-    ['qMini','wMini','dMini'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=''; });
-  }
+  // Показываем/скрываем нужный контейнер
+  const cardsViewEl=document.getElementById('cardsView');
+  const tableViewEl=document.getElementById('tableView');
+  if(cardsViewEl) cardsViewEl.style.display = v==='kanban' ? '' : 'none';
+  if(tableViewEl) tableViewEl.style.display = v==='table' ? '' : 'none';
 
   // Перепечатки — отдельный приоритетный список (исключаем из обычной очереди и фильтра материала)
   const reprints = free.filter(o=>o.isReprint);
@@ -2032,25 +1987,11 @@ function renderWork(){
     document.getElementById('wBody').innerHTML=`<tr><td colspan="9" class="empty-row">Нет активных подзаказов</td></tr>`;
   }
 
-  document.getElementById('dBody').innerHTML=finished.length?finished.map(o=>`
-    <tr>
-      <td><strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div></td>
-      <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':o.cat==='assembly'?'b-green':'b-amber'}">${o.type}</span></td>
-      <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.patient}${o.finishedAsAssemblyReady?' <span class="badge" style="background:#eee9fb;color:#3c3489;font-size:9px">готов к сборке</span>':''}</td>
-      <td><span class="badge b-gray">${o.sup}</span></td>
-      <td style="font-size:12px;color:var(--green);font-weight:700">${consume(o)}</td>
-      <td style="font-size:11px;color:var(--text2)">${o.finishedAt||'–'}</td>
-      <td style="font-size:11px;color:var(--blue);font-weight:700">${o.duration||'–'}</td>
-    </tr>`).join('')
-    :`<tr><td colspan="7" class="empty-row">Пока ничего</td></tr>`;
-
-  // Kanban/Mini рендеры
-  const qk=document.getElementById('qKanban'); if(qk) qk.innerHTML=renderKanbanQueue(filteredFree);
-  const wk=document.getElementById('wKanban'); if(wk) wk.innerHTML=renderKanbanWork(working);
-  const dk=document.getElementById('dKanban'); if(dk) dk.innerHTML=renderKanbanDone(finished);
-  const qm=document.getElementById('qMini');   if(qm) qm.innerHTML=renderMiniQueue(filteredFree);
-  const wm=document.getElementById('wMini');   if(wm) wm.innerHTML=renderMiniWork(working);
-  const dm=document.getElementById('dMini');   if(dm) dm.innerHTML=renderMiniDone(finished);
+  // Вид "Карточки" — два столбца
+  const cvQueue=document.getElementById('cvQueue'); if(cvQueue) cvQueue.innerHTML=renderCardsQueue(filteredFree);
+  const cvWork=document.getElementById('cvWork');   if(cvWork) cvWork.innerHTML=renderCardsWork(working);
+  const cvQueueCount=document.getElementById('cvQueueCount'); if(cvQueueCount) cvQueueCount.textContent=filteredFree.length;
+  const cvWorkCount=document.getElementById('cvWorkCount');   if(cvWorkCount) cvWorkCount.textContent=working.length;
 }
 
 async function takeOrder(id){
@@ -3210,7 +3151,7 @@ async function initWorker(){
 
   // Восстанавливаем тему и вид
   try{ applyTheme(localStorage.getItem('theme')||'light'); } catch(e){}
-  currentView = localStorage.getItem('viewMode')||'table';
+  currentView = localStorage.getItem('viewMode')||'kanban';
   renderCounters();
   renderWork();
   setInterval(renderCounters, 60000);
