@@ -10,7 +10,7 @@
 
   :root {
     /* Apple-style palette — light */
-    --bg: #f2f2f7;
+    --bg: #e2e2e8;
     --surface: #ffffff;
     --surface2: #f7f7f7;
     --border: rgba(0,0,0,.07);
@@ -85,7 +85,6 @@
   [data-theme="dark"] select, [data-theme="dark"] input[type=date],
   [data-theme="dark"] input[type=text], [data-theme="dark"] input[type=number],
   [data-theme="dark"] input[type=password] { background:var(--surface2);border-color:var(--border2);color:var(--text); }
-  [data-theme="dark"] .ctr { border-color:var(--border2) !important; }
   [data-theme="dark"] .vs-btn.active { background:var(--surface2); }
   [data-theme="dark"] .theme-toggle .tt-sun { display:flex; }
   [data-theme="dark"] .theme-toggle .tt-moon { display:none; }
@@ -139,6 +138,19 @@
   .ctr-pct { font-size: 10px; opacity: .7; }
   .ctr-btn { font-size: 10px; padding: 2px 8px; border-radius: 3px; border: 1px solid currentColor; opacity: .65; cursor: pointer; background: transparent; font-family: inherit; }
   .ctr-btn:hover { opacity: 1; }
+
+  /* Заканчивающийся материал/расходник/газ/калибровка — привлекаем внимание пульсацией.
+     Критично (≤15%) — быстрее и заметнее (красный), предупреждение (≤40%) — мягче (жёлтый). */
+  @keyframes ctr-pulse-crit {
+    0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--red-mid) 45%, transparent); }
+    50%     { box-shadow: 0 0 0 5px color-mix(in srgb, var(--red-mid) 0%, transparent); }
+  }
+  @keyframes ctr-pulse-warn {
+    0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber-mid) 35%, transparent); }
+    50%     { box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber-mid) 0%, transparent); }
+  }
+  .ctr-critical { animation: ctr-pulse-crit 1.4s ease-in-out infinite; }
+  .ctr-warning { animation: ctr-pulse-warn 2.2s ease-in-out infinite; }
 
   /* Section card */
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 2px rgba(20,40,60,.04); }
@@ -373,7 +385,17 @@
   .sub-row td:first-child { padding-left:24px; }
   .sub-row td { border-bottom:1px solid var(--border); vertical-align:middle; padding:7px 10px; }
   .sub-row:hover td { background: var(--hover-bg); }
-  .sub-row:last-of-type td { border-bottom: 2px solid var(--border2); }
+
+  /* Rамка, объединяющая мастер-строку с её подзаказами (или одиночный заказ)
+     в единый визуальный блок — тонкая, не яркая (var(--border), не border2). */
+  .ord-grp td:first-child { border-left: 1px solid var(--border); }
+  .ord-grp td:last-child { border-right: 1px solid var(--border); }
+  .ord-grp-first td { border-top: 1px solid var(--border); }
+  .ord-grp-first td:first-child { border-top-left-radius: var(--radius-md); }
+  .ord-grp-first td:last-child { border-top-right-radius: var(--radius-md); }
+  .ord-grp-last td { border-bottom: 1px solid var(--border) !important; }
+  .ord-grp-last td:first-child { border-bottom-left-radius: var(--radius-md); }
+  .ord-grp-last td:last-child { border-bottom-right-radius: var(--radius-md); }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -1421,15 +1443,18 @@ const CAT_MAP = {
   'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
 };
 
+/* Цвета заданы через CSS-переменные палитры (а не хардкод hex), чтобы карточки
+   счётчиков сами адаптировались под тёмную/светлую тему — переменные -mid и -bg
+   уже имеют отдельные значения для [data-theme="dark"] (см. :root / [data-theme=dark]). */
 const MATERIALS = [
-  { id:'alc',      label:'Спирт',             sub:'9 л / 3 дня',           icon:'⚗', total:50000, unit:'л',  current:31000, color:'#43c0ac', bcolor:'#43c0ac', tcolor:'#0f7a6b', bgcolor:'#e1f5f1', isTime:true  },
-  { id:'abs',      label:'ABS like серый',    sub:'Элайнеры, Модели',      icon:'◻', total:30000, unit:'мл', current:24500, color:'#2fc6f6', bcolor:'#1b6fb8', tcolor:'#0d5a9e', bgcolor:'#e8f3fc', isTime:false },
-  { id:'dental',   label:'Dental clear',      sub:'Позиционеры',           icon:'◻', total:30000, unit:'мл', current:19800, color:'#8f7de0', bcolor:'#5b4a9e', tcolor:'#5b4a9e', bgcolor:'#eee9fb', isTime:false },
-  { id:'surgical', label:'Surgical Guide',    sub:'Шаблоны',               icon:'◻', total:30000, unit:'мл', current:27100, color:'#43c0ac', bcolor:'#43c0ac', tcolor:'#0f7a6b', bgcolor:'#e1f5f1', isTime:false },
-  { id:'metal',    label:'Металл (порошок)',  sub:'1 кг / 15 печатей',     icon:'⬡', total:15000, unit:'г',  current:11400, color:'#f8c750', bcolor:'#9a6400', tcolor:'#9a6400', bgcolor:'#fdf3df', isTime:false },
-  { id:'gas',      label:'Газ',               sub:'1/7 балона / 1 печать', icon:'◎', total:700,   unit:'%',  current:520,   color:'#9aa3ab', bcolor:'#7a8694', tcolor:'#5a6470', bgcolor:'#eef1f3', isTime:false, isGas:true },
-  { id:'biocomp',  label:'Биосовместимый',    sub:'Позиционер/Шаблон биосовм.', icon:'◻', total:20000, unit:'мл', current:15000, color:'#d45a7e', bcolor:'#993556', tcolor:'#72243e', bgcolor:'#fbeaf0', isTime:false },
-  { id:'calib',    label:'Калибровка принтеров', sub:'каждые 2 недели, вторник 10:00', icon:'⚙', total:100, unit:'%', current:100, color:'#534ab7', bcolor:'#534ab7', tcolor:'#3c3489', bgcolor:'#eee9fb', isTime:false, isCalib:true },
+  { id:'alc',      label:'Спирт',             sub:'9 л / 3 дня',           icon:'⚗', total:50000, unit:'л',  current:31000, color:'var(--teal-mid)', bcolor:'var(--teal-mid)', tcolor:'var(--teal-mid)', bgcolor:'var(--teal-bg)', isTime:true  },
+  { id:'abs',      label:'ABS like серый',    sub:'Элайнеры, Модели',      icon:'◻', total:30000, unit:'мл', current:24500, color:'var(--blue-mid)', bcolor:'var(--blue-mid)', tcolor:'var(--blue-mid)', bgcolor:'var(--blue-bg)', isTime:false },
+  { id:'dental',   label:'Dental clear',      sub:'Позиционеры',           icon:'◻', total:30000, unit:'мл', current:19800, color:'var(--purple-mid)', bcolor:'var(--purple-mid)', tcolor:'var(--purple-mid)', bgcolor:'var(--purple-bg)', isTime:false },
+  { id:'surgical', label:'Surgical Guide',    sub:'Шаблоны',               icon:'◻', total:30000, unit:'мл', current:27100, color:'var(--teal-mid)', bcolor:'var(--teal-mid)', tcolor:'var(--teal-mid)', bgcolor:'var(--teal-bg)', isTime:false },
+  { id:'metal',    label:'Металл (порошок)',  sub:'1 кг / 15 печатей',     icon:'⬡', total:15000, unit:'г',  current:11400, color:'var(--amber-mid)', bcolor:'var(--amber-mid)', tcolor:'var(--amber-mid)', bgcolor:'var(--amber-bg)', isTime:false },
+  { id:'gas',      label:'Газ',               sub:'1/7 балона / 1 печать', icon:'◎', total:700,   unit:'%',  current:520,   color:'var(--gray-mid)', bcolor:'var(--gray-mid)', tcolor:'var(--gray-mid)', bgcolor:'var(--gray-bg)', isTime:false, isGas:true },
+  { id:'biocomp',  label:'Биосовместимый',    sub:'Позиционер/Шаблон биосовм.', icon:'◻', total:20000, unit:'мл', current:15000, color:'var(--pink-mid)', bcolor:'var(--pink-mid)', tcolor:'var(--pink-mid)', bgcolor:'var(--pink-bg)', isTime:false },
+  { id:'calib',    label:'Калибровка принтеров', sub:'каждые 2 недели, вторник 10:00', icon:'⚙', total:100, unit:'%', current:100, color:'var(--purple-mid)', bcolor:'var(--purple-mid)', tcolor:'var(--purple-mid)', bgcolor:'var(--purple-bg)', isTime:false, isCalib:true },
 ];
 
 const ALC_LAST  = Date.now() - 1.2*24*3600*1000;
@@ -1630,8 +1655,8 @@ function statusBadgesCompact(o){
 function alcPct(){return Math.max(0,Math.min(100,Math.round(((ALC_PERIOD-(Date.now()-ALC_LAST))/ALC_PERIOD)*100)));}
 function alcStr(){const rem=Math.max(0,ALC_PERIOD-(Date.now()-ALC_LAST));const h=Math.floor(rem/3600000);return Math.floor(h/24)+'д '+h%24+'ч';}
 function matPct(mat){return Math.max(0,Math.min(100,Math.round(mat.current/mat.total*100)));}
-function barCol(p,base){return p>40?base:p>15?'#f8c750':'#ed6a5e';}
-function brdCol(p,base){return p>40?base:p>15?'#9a6400':'#ed6a5e';}
+function barCol(p,base){return p>40?base:p>15?'var(--amber-mid)':'var(--red-mid)';}
+function brdCol(p,base){return p>40?base:p>15?'var(--amber-mid)':'var(--red-mid)';}
 
 function renderCounters(){
   const warns=[];
@@ -1639,8 +1664,9 @@ function renderCounters(){
   MATERIALS.forEach(mat=>{
     const p=mat.id==='alc'?alcPct():mat.isCalib?calibPct():matPct(mat);
     const bc=brdCol(p,mat.bcolor), fc=barCol(p,mat.color);
-    const tc=p<=15?'#b3372c':p<=40?'#9a6400':mat.tcolor;
-    const bg=p<=15?'#fde6e4':p<=40?'#fdf3df':mat.bgcolor;
+    const tc=p<=15?'var(--red-mid)':p<=40?'var(--amber-mid)':mat.tcolor;
+    const bg=p<=15?'var(--red-bg)':p<=40?'var(--amber-bg)':mat.bgcolor;
+    const pulseCls=p<=15?' ctr-critical':p<=40?' ctr-warning':'';
     let valStr, unitStr;
     if(mat.id==='alc'){valStr=alcStr();unitStr='до замены';}
     else if(mat.isCalib){valStr=calibStr();unitStr='до калибровки';}
@@ -1654,7 +1680,7 @@ function renderCounters(){
       else if(rem<24*3600*1000) warns.push('Калибровка принтеров: сегодня в 10:00');
     } else if(p<=15) warns.push(mat.label+': критично!');
     else if(p<=40) warns.push(mat.label+': заканчивается');
-    html+=`<div class="ctr" style="border-color:${bc};background:${bg}">
+    html+=`<div class="ctr${pulseCls}" style="border-color:${bc};background:${bg}">
       <div class="ctr-head">
         <div>
           <div class="ctr-label" style="color:${tc}">${mat.label}</div>
@@ -1678,8 +1704,8 @@ function renderCounters(){
   document.getElementById('countersWrap').innerHTML=html;
   const wb=document.getElementById('warnBar');
   const crits=warns.filter(w=>w.includes('критич'));
-  if(crits.length){wb.innerHTML='⚠ '+crits.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:#fde6e4;border:1px solid #ed6a5e;color:#b3372c;';}
-  else if(warns.length){wb.innerHTML='⚠ '+warns.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:#fdf3df;border:1px solid #f8c750;color:#9a6400;';}
+  if(crits.length){wb.innerHTML='⚠ '+crits.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:var(--red-bg);border:1px solid var(--red-mid);color:var(--red-mid);';}
+  else if(warns.length){wb.innerHTML='⚠ '+warns.join(' · ');wb.className='warn-bar show';wb.style.cssText+='background:var(--amber-bg);border:1px solid var(--amber-mid);color:var(--amber-mid);';}
   else{wb.className='warn-bar';}
 }
 
@@ -1843,7 +1869,7 @@ function renderQueueGroupRows(orders){
     const ref=subs[0];
     const hasUrgent=subs.some(o=>o.urgent);
     const deadlines=[...new Set(subs.filter(o=>o.deadline).map(o=>fmtDeadline(o.deadline)))];
-    html+=`<tr class="master-row">
+    html+=`<tr class="master-row ord-grp ord-grp-first">
       <td colspan="8">
         <div class="master-row-line">
           <span class="badge b-blue master-pill">№ ${masterId}</span>
@@ -1856,9 +1882,10 @@ function renderQueueGroupRows(orders){
         </div>
       </td>
     </tr>`;
-    subs.forEach(o=>{
+    subs.forEach((o,i)=>{
       const isDeleg=!!o.delegatedFrom;
-      const rowCls='sub-row'+(isDeleg?' row-click':'');
+      const isLastSub=i===subs.length-1;
+      const rowCls='sub-row ord-grp'+(isLastSub?' ord-grp-last':'')+(isDeleg?' row-click':'');
       const rowClick=isDeleg?`onclick="openDelegPreview('${o.id}')"`:'';
       const takeBtn=isDeleg
         ?`<button class="btn-take" onclick="event.stopPropagation();openDelegPreview('${o.id}')">👁 Просмотр</button>`
@@ -1940,7 +1967,7 @@ function renderWork(){
       if(isMulti){
         // Составной заказ — мастер-строка + подзаказы со смещением
         const ref=subs[0];
-        wHtml+=`<tr class="master-row">
+        wHtml+=`<tr class="master-row ord-grp ord-grp-first">
           <td colspan="9">
             <div class="master-row-line">
               <span class="badge b-blue master-pill">№ ${masterId}</span>
@@ -1952,7 +1979,8 @@ function renderWork(){
           </td>
         </tr>`;
       }
-      subs.forEach(o=>{
+      subs.forEach((o,i)=>{
+        const isLastSub=i===subs.length-1;
         const stages=st(o);
         const isLast=o.stage===stages.length-1;
         const nextName=!isLast?stages[o.stage+1]:'';
@@ -1966,7 +1994,8 @@ function renderWork(){
         const idCell = isMulti
           ? `<span style="color:var(--text3);font-size:10px">↳</span> <span style="font-size:11px;color:var(--text2)">${o.id}</span>`
           : `<strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div>`;
-        wHtml+=`<tr class="row-click" onclick="openOrder('${o.id}')">
+        const grpCls = isMulti ? ('ord-grp'+(isLastSub?' ord-grp-last':'')) : 'ord-grp ord-grp-first ord-grp-last';
+        wHtml+=`<tr class="row-click ${grpCls}" onclick="openOrder('${o.id}')">
           <td>${idCell}</td>
           <td><span class="badge ${o.cat==='polymer'?'b-blue':o.cat==='biocompat'?'b-pink':'b-amber'}">${o.type}</span></td>
           <td style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isMulti?'':o.patient}</td>
@@ -2191,7 +2220,7 @@ async function downloadFile(id, idx){
   }
   let url;
   try{
-    url = await getOrderFileUrl(f.path);
+    url = await getOrderFileUrl(f.path, f.name);
   } catch(e){
     alert('Не удалось получить файл: '+e.message);
     return;
@@ -2360,7 +2389,7 @@ function applyFilters(){
   const type=document.getElementById('fType').value;
   const cat=document.getElementById('fCat').value;
   histFiltered=ARCHIVE.filter(o=>{
-    const d=isoDate(o.finishedAt);
+    const d=isoDate(new Date(o.finishedAtTs));
     if(from&&d<from)return false;
     if(to&&d>to)return false;
     if(emp&&o.emp!==emp)return false;
@@ -2402,7 +2431,7 @@ function renderHistory(){
       const disp=unit==='г'&&v>=1000?(v/1000).toFixed(2)+' кг':Math.round(v)+' '+unit;
       return `<div class="mb-row"><div class="mb-name" title="${base}">${base}</div><div class="mb-bar-bg"><div class="mb-bar-fill" style="width:${pct}%;background:${col}33;border:1px solid ${col}55"></div></div><div class="mb-val" style="color:${col}">${disp}</div></div>`;
     }).join(''):'<div style="font-size:12px;color:var(--text3);padding:4px 0">Нет данных</div>');
-  const sorted=[...f].sort((a,b)=>b.finishedAt-a.finishedAt);
+  const sorted=[...f].sort((a,b)=>b.finishedAtTs-a.finishedAtTs);
   document.getElementById('histBody').innerHTML=sorted.length?sorted.map(o=>`
     <tr class="row-click" onclick="openHist('${o.id}')">
       <td><strong class="order-master">№ ${o.masterId}</strong><div class="order-sub">${o.id}</div></td>
@@ -2412,8 +2441,8 @@ function renderHistory(){
       <td><span class="badge b-gray">${o.sup}</span></td>
       <td>${o.qty}</td>
       <td style="font-size:11px;color:var(--text2)">${consume(o)}</td>
-      <td style="font-size:11px;color:var(--text2)">${fmtTime(o.finishedAt)}</td>
-      <td style="font-size:11px;color:var(--text2)">${fmtDate(o.finishedAt)}</td>
+      <td style="font-size:11px;color:var(--text2)">${fmtTime(new Date(o.finishedAtTs))}</td>
+      <td style="font-size:11px;color:var(--text2)">${fmtDate(new Date(o.finishedAtTs))}</td>
     </tr>`).join(''):`<tr><td colspan="9" class="empty-row">Нет заказов за выбранный период</td></tr>`;
 }
 function openHist(id){
@@ -2426,7 +2455,7 @@ function openHist(id){
     <div class="ii"><div class="ik">Сотрудник</div><div class="iv">${o.emp}</div></div>
     <div class="ii"><div class="ik">Источник</div><div class="iv">${o.sup}</div></div>
     <div class="ii"><div class="ik">Расход</div><div class="iv" style="color:var(--blue)">${consume(o)}</div></div>
-    <div class="ii"><div class="ik">Завершён</div><div class="iv">${fmtDate(o.finishedAt)} ${fmtTime(o.finishedAt)}</div></div>`;
+    <div class="ii"><div class="ik">Завершён</div><div class="iv">${fmtDate(new Date(o.finishedAtTs))} ${fmtTime(new Date(o.finishedAtTs))}</div></div>`;
   const stages=o.cat==='polymer'?SP:SM;
   document.getElementById('hStages').innerHTML=stages.map(s=>`
     <div class="stage-row s-done">
@@ -2528,7 +2557,7 @@ function showPage(name,btn){
   if(name==='history'){
     const today=new Date(),week=new Date();week.setDate(today.getDate()-6);
     if(!document.getElementById('fFrom').value){document.getElementById('fFrom').value=isoDate(week);document.getElementById('fTo').value=isoDate(today);}
-    applyFilters();
+    loadArchiveFromDb().then(applyFilters);
   }
 }
 
@@ -2681,9 +2710,15 @@ async function uploadOrderFiles(fileList, masterId){
   return uploaded;
 }
 
-/* Получает временную ссылку на скачивание реального файла из приватного bucket'а */
-async function getOrderFileUrl(path){
-  const { data, error } = await sb.storage.from(ORDER_FILES_BUCKET).createSignedUrl(path, 300);
+/* Получает временную ссылку на скачивание реального файла из приватного bucket'а.
+   downloadName — исходное имя файла: путь в storage содержит санитайзинг + случайный
+   префикс (чтобы избежать коллизий), поэтому без явного download-имени браузер
+   для кросс-доменной signed URL игнорирует атрибут a.download и подставляет имя
+   из самого пути — отсюда расхождение имени файла после скачивания. Передаём
+   имя через опцию download, чтобы Supabase Storage отдал правильный
+   Content-Disposition. */
+async function getOrderFileUrl(path, downloadName){
+  const { data, error } = await sb.storage.from(ORDER_FILES_BUCKET).createSignedUrl(path, 300, downloadName ? { download: downloadName } : undefined);
   if(error) throw new Error(error.message);
   return data.signedUrl;
 }
@@ -2737,6 +2772,15 @@ async function loadQueueFromStorage(){
   const { data, error } = await sb.from('orders').select('*').order('created_at', {ascending:false});
   if(error){ console.warn('loadQueueFromStorage error', error); return null; }
   return (data||[]).map(dbRowToOrder);
+}
+
+/* Загружает завершённые подзаказы из БД для страницы "История заказов".
+   ARCHIVE раньше объявлялся, но никогда не наполнялся — история всегда была пустой. */
+async function loadArchiveFromDb(){
+  const { data, error } = await sb.from('orders').select('*').not('finished_at', 'is', null).order('finished_at', {ascending:false});
+  if(error){ console.warn('loadArchiveFromDb error', error); return; }
+  ARCHIVE.length = 0;
+  (data||[]).map(dbRowToOrder).forEach(o=>{ o.emp = o.worker || '—'; ARCHIVE.push(o); });
 }
 
 /* Точечное обновление/создание ОДНОЙ строки — без read-modify-write всего массива.
