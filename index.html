@@ -331,10 +331,14 @@
   .cv-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
   .cv-col { display:flex;flex-direction:column;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);background:var(--surface); }
   .cv-hd { display:flex;align-items:center;gap:8px;padding:11px 14px;font-size:12px;font-weight:700;color:var(--text); }
-  .cv-hd-queue { background:rgba(0,113,227,.09); }
+  .cv-hd-queue { background:rgba(0,113,227,.09);flex-direction:column;align-items:stretch;gap:7px; }
   .cv-hd-work  { background:rgba(52,199,89,.09); }
   [data-theme="dark"] .cv-hd-queue { background:rgba(96,165,250,.09);color:#60a5fa; }
   [data-theme="dark"] .cv-hd-work  { background:rgba(52,211,153,.09);color:#34d399; }
+  .cv-hd-top { display:flex;align-items:center;gap:8px; }
+  .cv-hd-filters { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+  .cv-select { font-size:10px;height:24px;padding:0 8px;border-radius:var(--radius-pill);border:1px solid rgba(0,113,227,.18);background:rgba(255,255,255,.65);color:#0062cc;font-family:inherit;font-weight:600; }
+  [data-theme="dark"] .cv-select { border-color:rgba(96,165,250,.25);background:rgba(255,255,255,.06);color:#60a5fa; }
   .cv-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#0071e3; }
   .cv-hd-work .cv-dot { background:#34c759; }
   [data-theme="dark"] .cv-hd-queue .cv-dot { background:#60a5fa; }
@@ -1002,9 +1006,24 @@
       <div id="cardsView" class="cv-grid">
         <div class="cv-col">
           <div class="cv-hd cv-hd-queue">
-            <span class="cv-dot"></span>
-            <span class="cv-title">Очередь</span>
-            <span class="cv-pill" id="cvQueueCount">0</span>
+            <div class="cv-hd-top">
+              <span class="cv-dot"></span>
+              <span class="cv-title">Очередь — свободные заказы и подзаказы</span>
+              <span class="cv-pill" id="cvQueueCount">0</span>
+            </div>
+            <div class="cv-hd-filters">
+              <select id="qFilterCat" class="cv-select" onchange="renderWork()">
+                <option value="">Все материалы</option>
+                <option value="polymer">Полимер</option>
+                <option value="biocompat">Биосовместимый</option>
+                <option value="metal">Металл</option>
+                <option value="assembly">Сборка</option>
+              </select>
+              <select id="qSortUrgency" class="cv-select" onchange="renderWork()" title="Сортировка по срочности">
+                <option value="">Сортировка: по поступлению</option>
+                <option value="urgent">🔥 Сначала срочные</option>
+              </select>
+            </div>
           </div>
           <div class="cards-wrap" id="cvQueue"></div>
         </div>
@@ -1026,20 +1045,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
               Очередь — свободные заказы и подзаказы
             </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <select id="qFilterCat" onchange="renderWork()" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
-                <option value="">Все материалы</option>
-                <option value="polymer">Полимер</option>
-                <option value="biocompat">Биосовместимый</option>
-                <option value="metal">Металл</option>
-                <option value="assembly">Сборка</option>
-              </select>
-              <select id="qSortUrgency" onchange="renderWork()" title="Сортировка по срочности" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
-                <option value="">Сортировка: по поступлению</option>
-                <option value="urgent">🔥 Сначала срочные</option>
-              </select>
-              <span class="card-hint">«Взять» — принять в работу</span>
-            </div>
+            <span class="card-hint">«Взять» — принять в работу</span>
           </div>
           <table>
             <thead><tr>
