@@ -661,16 +661,12 @@
         <input type="date" id="aDeadline" style="width:140px">
       </div>
       <div class="af">
-        <label>Файлы модели (можно несколько)</label>
-        <input type="file" id="aFile" multiple style="width:170px;font-size:11px;padding:6px 4px" accept=".stl,.3mf,.zip">
-      </div>
-      <div class="af">
         <label>Комментарий</label>
         <input type="text" id="aComment" placeholder="Особые требования..." style="width:200px">
       </div>
     </div>
     <div>
-      <label style="font-size:10px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Изделия в заказе</label>
+      <label style="font-size:10px;font-weight:700;color:#7a8694;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Изделия в заказе — файл модели прикрепляется отдельно к каждому изделию</label>
       <div id="aItemsWrap" style="display:flex;flex-direction:column;gap:6px"></div>
       <button onclick="addOrderItem()" style="margin-top:6px;font-size:11px;padding:4px 12px;border-radius:4px;border:1px dashed #7a8694;background:transparent;color:#7a8694;cursor:pointer;font-family:inherit">+ Добавить изделие</button>
     </div>
@@ -1005,6 +1001,10 @@
               <option value="biocompat">Биосовместимый</option>
               <option value="metal">Металл</option>
               <option value="assembly">Сборка</option>
+            </select>
+            <select id="qSortUrgency" onchange="renderWork()" title="Сортировка по срочности" style="font-size:11px;height:26px;padding:0 6px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-family:inherit">
+              <option value="">Сортировка: по поступлению</option>
+              <option value="urgent">🔥 Сначала срочные</option>
             </select>
             <span class="card-hint">«Взять» — принять в работу</span>
           </div>
@@ -1743,6 +1743,22 @@ function catClass(o){
   return 'cat-metal';
 }
 
+/* ─── СОРТИРОВКА ПО СРОЧНОСТИ ─── */
+// 🔥 Срочные — первыми, затем те, у кого есть дедлайн (по возрастанию даты), остальные — как есть.
+function orderUrgencyRank(o){
+  if(o.urgent) return 0;
+  if(o.deadline) return 1;
+  return 2;
+}
+function sortByUrgency(list){
+  return [...list].sort((a,b)=>{
+    const ra=orderUrgencyRank(a), rb=orderUrgencyRank(b);
+    if(ra!==rb) return ra-rb;
+    if(ra===1) return (a.deadline||'').localeCompare(b.deadline||'');
+    return 0; // Array.sort стабилен — сохраняем исходный порядок (по поступлению)
+  });
+}
+
 function renderKanbanQueue(orders){
   if(!orders.length) return '<div class="empty-row" style="padding:16px;text-align:center;color:var(--text3)">Нет подзаказов</div>';
   const groups={};
@@ -1950,7 +1966,9 @@ function renderWork(){
     `<tr><td colspan="8" class="empty-row">Нет перепечаток</td></tr>`;
 
   const filterCat = (document.getElementById('qFilterCat')||{}).value || '';
-  const filteredFree = nonReprintFree.filter(o=>!filterCat||o.cat===filterCat);
+  const sortUrgent = (document.getElementById('qSortUrgency')||{}).value === 'urgent';
+  let filteredFree = nonReprintFree.filter(o=>!filterCat||o.cat===filterCat);
+  if(sortUrgent) filteredFree = sortByUrgency(filteredFree);
 
   if(filteredFree.length){
     document.getElementById('qBody').innerHTML = renderQueueGroupRows(filteredFree);
@@ -3383,6 +3401,7 @@ function addOrderItem(){
       </optgroup>
     </select>
     <input type="number" name="item-qty" value="1" min="1" max="99" style="width:56px;height:32px;padding:0 6px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit" placeholder="шт.">
+    <input type="file" name="item-file" multiple accept=".stl,.3mf,.zip" title="Файл(ы) модели для этого изделия" style="width:190px;height:32px;padding:5px 4px;border:1px solid #d3dae0;border-radius:4px;font-size:11px;font-family:inherit;background:#fff">
     <button onclick="this.parentNode.remove()" style="height:32px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;background:#fff;color:#7a8694;cursor:pointer;font-size:14px;font-family:inherit">✕</button>
   `;
   wrap.appendChild(row);
@@ -3464,37 +3483,41 @@ async function adminPostOrderInner(){
   const rows = Array.from(wrap.children).filter(el=>el.tagName==='DIV' && el.querySelector('[name=item-type]'));
   if(!rows.length){ alert('Добавьте хотя бы одно изделие'); return; }
 
-  // Прикреплённые файлы (опционально, можно несколько, общие на весь заказ) —
-  // реально загружаются в Supabase Storage, а не просто запоминаются по имени
-  const fileInput = document.getElementById('aFile');
-  let attachedFiles = [];
-  if(fileInput && fileInput.files && fileInput.files.length){
-    try{
-      attachedFiles = await uploadOrderFiles(fileInput.files, masterId);
-    } catch(e){
-      alert('Ошибка загрузки файлов: '+e.message);
-      return;
-    }
-  }
-
   const now = new Date();
   const arrived = now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
   const created = [];
   const usedSuffixes = {};
 
-  rows.forEach(row=>{
+  // У каждого изделия — своё собственное поле файла (не общее на весь заказ):
+  // оператор печати, взявший конкретный подзаказ, должен видеть именно "его" файл.
+  for(const row of rows){
     const type = row.querySelector('[name=item-type]').value;
     const qty  = parseInt(row.querySelector('[name=item-qty]').value)||1;
     const cat  = MAT_CFG_CATS[type]||'polymer';
     const suf  = TYPE_SUFFIX[cat]||'П';
     usedSuffixes[suf] = (usedSuffixes[suf]||0)+1;
     const id = masterId+'-'+suf+(usedSuffixes[suf]>1?usedSuffixes[suf]:'');
+
+    const itemFileInput = row.querySelector('[name=item-file]');
+    let files = [];
+    if(itemFileInput && itemFileInput.files && itemFileInput.files.length){
+      try{
+        files = await uploadOrderFiles(itemFileInput.files, id);
+      } catch(e){
+        alert('Ошибка загрузки файла для изделия «'+type+'»: '+e.message);
+        return;
+      }
+    }
+    if(!files.length){
+      files = [{name: (masterId+'_'+type.toLowerCase().replace(/[^а-яa-z0-9]/gi,'_'))+'.stl', size:'—'}];
+    }
+
     const order = {id, masterId, type, cat, patient, sup, qty, arrived,
       worker:null, stage:-1, urgent, deadline, comment, isReprint,
-      files: attachedFiles.length ? attachedFiles : [{name: (masterId+'_'+type.toLowerCase().replace(/[^а-яa-z0-9]/gi,'_'))+'.stl', size:'—'}],
+      files,
       delegatedFrom:null, _createdAt: Date.now()};
     created.push(order);
-  });
+  }
 
   adminOrders.unshift(...created);
   // Вставляем все подзаказы заказа одним батчем напрямую в БД
@@ -3508,7 +3531,6 @@ async function adminPostOrderInner(){
   document.getElementById('aStatus').value='normal';
   document.getElementById('aDeadline').value='';
   document.getElementById('aItemsWrap').innerHTML='';
-  if(document.getElementById('aFile')) document.getElementById('aFile').value='';
   adminCounter++;
 
   renderAdminQueue();
