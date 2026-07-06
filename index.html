@@ -3300,6 +3300,7 @@ async function initAdmin(){
   await loadProfilesFromDb();
   const stored = await loadQueueFromStorage();
   adminOrders = stored || []; // PRIMARY KEY в БД гарантирует отсутствие дублей
+  syncAdminCounter();
   renderAdminQueue();
   renderReturnsPanel();
   // Добавляем первую пустую строку изделия
@@ -3308,10 +3309,26 @@ async function initAdmin(){
   // Realtime вместо polling — мгновенные обновления при действиях сотрудников
   subscribeToOrdersRealtime();
 }
+
+/* Счётчик автогенерации №заказа стартует с захардкоженного значения и живёт только
+   в памяти вкладки — без синхронизации с БД он рано или поздно повторит уже занятый
+   номер (после переоткрытия панели или во второй вкладке), и вставка упадёт на
+   unique constraint orders_pkey. Подтягиваем счётчик выше максимального реального
+   masterId при каждой загрузке/обновлении данных. */
+function syncAdminCounter(){
+  let maxId = 0;
+  adminOrders.forEach(o=>{
+    const n = parseInt(o.masterId, 10);
+    if(!isNaN(n) && n > maxId) maxId = n;
+  });
+  if(maxId + 1 > adminCounter) adminCounter = maxId + 1;
+}
+
 async function adminRefreshData(){
   const stored = await loadQueueFromStorage();
   if(stored){
     adminOrders = stored;
+    syncAdminCounter();
     renderAdminQueue();
   }
   renderReturnsPanel();
