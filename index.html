@@ -2180,7 +2180,9 @@ async function downloadFile(id, idx){
   const f = o && o.files && o.files[idx||0];
   if(!f) return;
   if(!f.path){
-    alert('У этого файла нет сохранённого содержимого (прикреплён до перехода на файловое хранилище). Попросите администратора прикрепить файл заново.');
+    alert(f.expired
+      ? 'Файл уже удалён из хранилища (был скачан ранее либо прошло более 72 часов). Попросите администратора прикрепить файл заново.'
+      : 'У этого файла нет сохранённого содержимого (прикреплён до перехода на файловое хранилище). Попросите администратора прикрепить файл заново.');
     return;
   }
   let url;
@@ -2193,6 +2195,13 @@ async function downloadFile(id, idx){
   const a=document.createElement('a');
   a.href=url; a.download=f.name;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+  // Помечаем как скачанный — файл реально удалится из Storage при следующей
+  // очистке в панели администратора (удалять объекты может только админ).
+  if(!f.downloaded){
+    f.downloaded = true;
+    await upsertOrderToDb(o);
+  }
 }
 function advStage(id){
   const o=myWork.find(x=>x.id===id);if(!o)return;
@@ -2555,6 +2564,7 @@ let pollInterval = null;
 let lastQueueLen = 0;
 let clockInterval = null;
 let adminPollInterval = null;
+let fileCleanupInterval = null;
 let realtimeChannel = null;
 
 /* Email-маска для логина: вводим только короткое имя пользователя (например "Sergey"),
@@ -2627,6 +2637,7 @@ async function doLogout(){
   clearInterval(pollInterval);
   clearInterval(clockInterval);
   clearInterval(adminPollInterval);
+  clearInterval(fileCleanupInterval);
   if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
   await sb.auth.signOut();
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -2671,7 +2682,7 @@ async function uploadOrderFiles(fileList, masterId){
     if(error) throw new Error('не удалось загрузить '+f.name+' ('+error.message+')');
     const sizeKb = f.size/1024;
     const sizeStr = sizeKb>1024 ? (sizeKb/1024).toFixed(1)+' МБ' : Math.round(sizeKb)+' КБ';
-    uploaded.push({ name: f.name, size: sizeStr, path });
+    uploaded.push({ name: f.name, size: sizeStr, path, uploadedAt: Date.now() });
   }
   return uploaded;
 }
@@ -2815,6 +2826,55 @@ async function markReturnResolvedInDb(dbId){
     .update({ resolved:true, resolved_at_text: nowTime() })
     .eq('id', dbId);
   if(error) console.warn('markReturnResolvedInDb error', error);
+}
+async function updateReturnFilesInDb(dbId, files){
+  const { error } = await sb.from('returns').update({ files }).eq('id', dbId);
+  if(error) console.warn('updateReturnFilesInDb error', error);
+}
+
+/* ─── ОЧИСТКА ФАЙЛОВ (экономия места в Storage) ───
+   Правило: файл удаляется из bucket'а, как только он был скачан ХОТЯ БЫ раз,
+   либо — если его так и не скачали — по истечении 72 часов с момента загрузки.
+   Удалять объекты из Storage может только администратор (RLS), поэтому
+   реальное удаление происходит здесь, при работе панели администратора;
+   скачивание оператором только помечает файл как "downloaded" в БД. */
+const ORDER_FILE_EXPIRY_MS = 72*3600*1000;
+
+async function cleanupExpiredOrderFiles(){
+  const paths = [];
+  const orderUpdates = [];
+  const returnUpdates = [];
+  const now = Date.now();
+  const shouldPurge = f => f.path && (f.downloaded || (f.uploadedAt && now - f.uploadedAt > ORDER_FILE_EXPIRY_MS));
+
+  const orders = await loadQueueFromStorage();
+  (orders||[]).forEach(o=>{
+    if(!o.files || !o.files.length) return;
+    let changed = false;
+    o.files.forEach(f=>{
+      if(shouldPurge(f)){ paths.push(f.path); f.path=null; f.expired=true; changed=true; }
+    });
+    if(changed) orderUpdates.push(o);
+  });
+
+  const returns = await loadReturnsFromStorage();
+  (returns||[]).forEach(r=>{
+    if(!r.files || !r.files.length) return;
+    let changed = false;
+    r.files.forEach(f=>{
+      if(shouldPurge(f)){ paths.push(f.path); f.path=null; f.expired=true; changed=true; }
+    });
+    if(changed) returnUpdates.push(r);
+  });
+
+  if(!paths.length) return;
+
+  const { error } = await sb.storage.from(ORDER_FILES_BUCKET).remove(paths);
+  if(error){ console.warn('cleanupExpiredOrderFiles remove error', error); return; }
+
+  for(const o of orderUpdates) await upsertOrderToDb(o);
+  for(const r of returnUpdates) await updateReturnFilesInDb(r._dbId, r.files);
+  console.log('🧹 Storage: удалено файлов —', paths.length);
 }
 
 /* ─── RETURN TO SUPPLIER ─── */
@@ -3308,6 +3368,12 @@ async function initAdmin(){
   startTopbarClock();
   // Realtime вместо polling — мгновенные обновления при действиях сотрудников
   subscribeToOrdersRealtime();
+
+  // Чистим Storage от скачанных/просроченных (>72ч) файлов сразу и раз в час,
+  // пока панель администратора открыта (удалять из bucket'а может только админ).
+  cleanupExpiredOrderFiles();
+  if(fileCleanupInterval) clearInterval(fileCleanupInterval);
+  fileCleanupInterval = setInterval(cleanupExpiredOrderFiles, 60*60*1000);
 }
 
 /* Счётчик автогенерации №заказа стартует с захардкоженного значения и живёт только
