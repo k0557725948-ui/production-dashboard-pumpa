@@ -2,8 +2,14 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Производство — дашборд сотрудника</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Производство">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -594,6 +600,16 @@
   .bell-row-day { font-size:10px;color:var(--text3); }
   .bell-row.today .bell-row-name { color:var(--text);font-weight:700; }
   .bell-row.today .bell-row-day { color:var(--blue);font-weight:700; }
+
+  /* ─── PWA: safe-area insets ─── */
+  .admin-bar, .user-topbar { padding-top: max(10px, env(safe-area-inset-top)); }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* ─── PWA: mobile adaptation ─── */
+  @media (max-width: 768px) {
+    .btn-take, .mc-btn-done { min-height: 36px; font-size: 12px !important; }
+    input, select { font-size: 16px !important; }
+  }
 
 </style>
 </head>
@@ -3831,6 +3847,12 @@ Object.defineProperty(window,'CURRENT_USER',{get:()=>window.CURRENT_USER_NAME||'
   }
   document.getElementById('loginScreen').classList.remove('hidden');
 })();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/production-dashboard-pumpa/sw.js')
+    .then(()=>console.log('SW registered'))
+    .catch(e=>console.warn('SW error',e));
+}
 </script>
 </body>
 </html>
