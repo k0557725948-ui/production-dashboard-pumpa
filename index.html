@@ -610,33 +610,25 @@
     .btn-take, .mc-btn-done { min-height: 36px; font-size: 12px !important; }
     input, select { font-size: 16px !important; }
 
-    /* Групповые таблицы очереди (мастер-заказ + подзаказы с бейджами) не помещаются
-       в общий табличный "block+nowrap" хак — переверстываем строки во флекс, иначе
-       содержимое ячеек накладывается друг на друга */
-    #reprintCard table thead,
-    #tableView table thead { display: none; }
+    /* Табличные строки с бейджами (тип/статус/срок/кнопки) не помещаются в общий
+       табличный "block+nowrap" хак — переверстываем строки во флекс, иначе
+       содержимое ячеек накладывается друг на друга. Касается всех таблиц
+       карточек: перепечатки, очередь, история заказов, админ-таблицы. */
+    .card table thead { display: none; }
+    .card table tbody { display: block; }
 
-    #reprintCard table tbody,
-    #tableView table tbody { display: block; }
+    .card table tbody tr.master-row,
+    .card table tbody tr.master-row td { display: block; }
 
-    #reprintCard table tbody tr.master-row,
-    #tableView table tbody tr.master-row,
-    #reprintCard table tbody tr.master-row td,
-    #tableView table tbody tr.master-row td { display: block; }
+    .master-row-line { flex-wrap: wrap; }
 
-    #reprintCard .master-row-line,
-    #tableView .master-row-line { flex-wrap: wrap; }
-
-    #reprintCard table tbody tr:not(.master-row),
-    #tableView table tbody tr:not(.master-row) {
+    .card table tbody tr:not(.master-row) {
       display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
       padding: 7px 10px; border-bottom: 1px solid var(--border);
     }
-    #reprintCard table tbody tr:not(.master-row) td,
-    #tableView table tbody tr:not(.master-row) td { display: contents; }
+    .card table tbody tr:not(.master-row) td { display: contents; }
 
-    #reprintCard table tbody td.empty-row,
-    #tableView table tbody td.empty-row { display: block !important; text-align: center; }
+    .card table tbody td.empty-row { display: block !important; text-align: center; }
   }
 
 </style>
