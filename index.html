@@ -570,7 +570,7 @@
   .toast-dot { width:8px;height:8px;border-radius:50%;background:#2fc6f6;flex-shrink:0;animation:pulse 1.2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
   /* ─── USER TOPBAR ─── */
-  .user-topbar { background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:4px;z-index:900;border-bottom:1px solid var(--topbar-border); }
+  .user-topbar { background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:var(--text);padding:10px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;position:sticky;top:4px;z-index:900;border-bottom:1px solid var(--topbar-border); }
   .user-topbar-name { font-size:12px;font-weight:700;flex:1;color:var(--text); }
   .user-topbar-role { font-size:11px;color:var(--text2); }
   .user-topbar-clock { font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;display:flex;align-items:center;gap:6px;padding:0 4px;border-left:1px solid var(--border);margin-left:2px;padding-left:12px; }
@@ -609,6 +609,34 @@
   @media (max-width: 768px) {
     .btn-take, .mc-btn-done { min-height: 36px; font-size: 12px !important; }
     input, select { font-size: 16px !important; }
+
+    /* Групповые таблицы очереди (мастер-заказ + подзаказы с бейджами) не помещаются
+       в общий табличный "block+nowrap" хак — переверстываем строки во флекс, иначе
+       содержимое ячеек накладывается друг на друга */
+    #reprintCard table thead,
+    #tableView table thead { display: none; }
+
+    #reprintCard table tbody,
+    #tableView table tbody { display: block; }
+
+    #reprintCard table tbody tr.master-row,
+    #tableView table tbody tr.master-row,
+    #reprintCard table tbody tr.master-row td,
+    #tableView table tbody tr.master-row td { display: block; }
+
+    #reprintCard .master-row-line,
+    #tableView .master-row-line { flex-wrap: wrap; }
+
+    #reprintCard table tbody tr:not(.master-row),
+    #tableView table tbody tr:not(.master-row) {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
+      padding: 7px 10px; border-bottom: 1px solid var(--border);
+    }
+    #reprintCard table tbody tr:not(.master-row) td,
+    #tableView table tbody tr:not(.master-row) td { display: contents; }
+
+    #reprintCard table tbody td.empty-row,
+    #tableView table tbody td.empty-row { display: block !important; text-align: center; }
   }
 
 </style>
