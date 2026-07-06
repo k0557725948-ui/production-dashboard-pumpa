@@ -2665,7 +2665,8 @@ async function uploadOrderFiles(fileList, masterId){
   const uploaded = [];
   for(const f of Array.from(fileList)){
     const safeName = f.name.replace(/[^\w.\-]+/g,'_');
-    const path = masterId+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'_'+safeName;
+    const safeMasterId = String(masterId).replace(/[^\w.\-]+/g,'_');
+    const path = safeMasterId+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'_'+safeName;
     const { error } = await sb.storage.from(ORDER_FILES_BUCKET).upload(path, f);
     if(error) throw new Error('не удалось загрузить '+f.name+' ('+error.message+')');
     const sizeKb = f.size/1024;
