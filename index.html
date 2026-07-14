@@ -1172,8 +1172,9 @@
           <span class="f-lbl">Изделие:</span>
           <select id="fType" onchange="applyFilters()">
             <option value="">Все</option>
-            <option>Элайнер</option><option>Модель (форма)</option><option>Позиционер</option>
-            <option>Шаблон биосовместимый</option>
+            <option>Элайнер</option><option>Капа</option><option>Модель</option><option>Форма (базис)</option><option>Накусок</option>
+            <option>Модель (форма)</option>
+            <option>Позиционер</option><option>Шаблон биосовместимый</option><option>Модель под обжатие</option>
             <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
           </select>
           <div class="f-sep"></div>
@@ -1374,10 +1375,14 @@
           <label>Изделие</label>
           <select id="erType" style="width:200px">
             <optgroup label="Полимер">
-              <option>Элайнер</option><option>Модель (форма)</option>
+              <option>Элайнер</option><option>Капа</option><option>Модель</option><option>Форма (базис)</option>
+              <option>Модель (форма)</option>
             </optgroup>
             <optgroup label="Биосовместимый полимер">
-              <option>Позиционер</option><option>Шаблон биосовместимый</option>
+              <option>Позиционер</option><option>Шаблон биосовместимый</option><option>Модель под обжатие</option>
+            </optgroup>
+            <optgroup label="Сплинт">
+              <option>Модель</option><option>Форма (базис)</option><option>Накусок</option><option>Модель под обжатие</option>
             </optgroup>
             <optgroup label="Металл">
               <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
@@ -1496,10 +1501,15 @@ function stagesByType(type, masterId){
 const MAT_CFG = {
   // Полимер
   'Элайнер':                  {matId:'abs',      ml:30,  unit:'мл', cat:'polymer'},
-  'Модель (форма)':           {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
+  'Модель (форма)':           {matId:'abs',      ml:200, unit:'мл', cat:'polymer'}, // legacy-тип, оставлен для старых заказов/возвратов — в новых больше не используется, см. «Модель» и «Форма (базис)»
+  'Капа':                     {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
+  'Модель':                   {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
+  'Форма (базис)':            {matId:'abs',      ml:200, unit:'мл', cat:'polymer'},
+  'Накусок':                  {matId:'abs',      ml:50,  unit:'мл', cat:'polymer'},
   // Биосовместимый полимер
   'Позиционер':               {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
   'Шаблон биосовместимый':    {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
+  'Модель под обжатие':       {matId:'biocomp',  ml:50,  unit:'мл', cat:'biocompat'},
   // Металл
   'Аппарат':                  {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Аппарат (кольцо)':         {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
@@ -1510,7 +1520,8 @@ const MAT_CFG = {
 // Категории для маршрута
 const CAT_MAP = {
   'Элайнер':'polymer','Модель (форма)':'polymer',
-  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Капа':'polymer','Модель':'polymer','Форма (базис)':'polymer','Накусок':'polymer',
+  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat','Модель под обжатие':'biocompat',
   'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
 };
 
@@ -3465,7 +3476,8 @@ let adminCounter = 1139;
 
 const MAT_CFG_CATS = {
   'Элайнер':'polymer','Модель (форма)':'polymer',
-  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat',
+  'Капа':'polymer','Модель':'polymer','Форма (базис)':'polymer','Накусок':'polymer',
+  'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat','Модель под обжатие':'biocompat',
   'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
 };
 
@@ -3482,10 +3494,13 @@ function addOrderItem(){
   row.innerHTML = `
     <select name="item-type" style="height:32px;padding:0 8px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit;flex:1">
       <optgroup label="Полимер">
-        <option>Элайнер</option><option>Модель (форма)</option>
+        <option>Элайнер</option><option>Капа</option><option>Модель</option><option>Форма (базис)</option>
       </optgroup>
       <optgroup label="Биосовместимый полимер">
-        <option>Позиционер</option><option>Шаблон биосовместимый</option>
+        <option>Позиционер</option><option>Шаблон биосовместимый</option><option>Модель под обжатие</option>
+      </optgroup>
+      <optgroup label="Сплинт">
+        <option>Модель</option><option>Форма (базис)</option><option>Накусок</option><option>Модель под обжатие</option>
       </optgroup>
       <optgroup label="Металл">
         <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
