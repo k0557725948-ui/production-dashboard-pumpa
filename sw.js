@@ -1,4 +1,4 @@
-const CACHE = 'dashboard-v2';
+const CACHE = 'dashboard-v3';
 const ASSETS = [
   '/production-dashboard-pumpa/',
   '/production-dashboard-pumpa/index.html',
@@ -21,12 +21,21 @@ self.addEventListener('activate', e => e.waitUntil(
 // Network-first: пока есть сеть — всегда отдаём актуальную версию с сервера
 // (и обновляем кеш попутно). Кеш — только запасной вариант для оффлайна,
 // а не постоянная копия, иначе цех годами видит версию с первого визита.
-self.addEventListener('fetch', e => e.respondWith(
-  fetch(e.request)
-    .then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy));
-      return res;
-    })
-    .catch(() => caches.match(e.request))
-));
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  // Кешируем только собственные GET-запросы (статику приложения). Всё остальное —
+  // в первую очередь запросы к Supabase (логин, чтение/запись заказов, realtime) —
+  // не трогаем вообще: cache.put() не поддерживает не-GET запросы и падает с ошибкой,
+  // из-за чего в PWA-режиме мог ломаться сам ответ на запрос логина.
+  if(req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+
+  e.respondWith(
+    fetch(req)
+      .then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(req, copy));
+        return res;
+      })
+      .catch(() => caches.match(req))
+  );
+});
