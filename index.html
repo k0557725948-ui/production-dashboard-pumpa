@@ -613,22 +613,43 @@
     /* Табличные строки с бейджами (тип/статус/срок/кнопки) не помещаются в общий
        табличный "block+nowrap" хак — переверстываем строки во флекс, иначе
        содержимое ячеек накладывается друг на друга. Касается всех таблиц
-       карточек: перепечатки, очередь, история заказов, админ-таблицы. */
-    .card table thead { display: none; }
-    .card table tbody { display: block; }
+       карточек: перепечатки, очередь, история заказов. Админ-таблицы
+       (.admin-queue-wrap — заказы/возвраты) используют свою обёртку, не .card,
+       поэтому перечислены отдельно теми же правилами. */
+    .card table thead, .admin-queue-wrap table thead { display: none; }
+    .card table tbody, .admin-queue-wrap table tbody { display: block; }
 
     .card table tbody tr.master-row,
-    .card table tbody tr.master-row td { display: block; }
+    .card table tbody tr.master-row td,
+    .admin-queue-wrap table tbody tr.master-row,
+    .admin-queue-wrap table tbody tr.master-row td { display: block; }
 
     .master-row-line { flex-wrap: wrap; }
 
-    .card table tbody tr:not(.master-row) {
+    .card table tbody tr:not(.master-row),
+    .admin-queue-wrap table tbody tr:not(.master-row) {
       display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
       padding: 7px 10px; border-bottom: 1px solid var(--border);
     }
-    .card table tbody tr:not(.master-row) td { display: contents; }
+    .card table tbody tr:not(.master-row) td,
+    .admin-queue-wrap table tbody tr:not(.master-row) td { display: contents; }
 
-    .card table tbody td.empty-row { display: block !important; text-align: center; }
+    .card table tbody td.empty-row,
+    .admin-queue-wrap table tbody td.empty-row { display: block !important; text-align: center; }
+
+    /* Форма размещения заказа админом — поля заданы фиксированной px-шириной
+       под десктоп (80/160/190/140/200px в сумме шире экрана телефона) и не
+       переносятся, а обрезаются. На мобильном тянем их на всю ширину и
+       складываем строки друг под друга. */
+    .admin-form-wrap { margin: 14px 10px !important; }
+    .admin-form-wrap > div { flex-direction: column; align-items: stretch !important; }
+    .admin-form-wrap .af input, .admin-form-wrap .af select,
+    .admin-form-wrap > .af input, .admin-form-wrap > .af select { width: 100% !important; }
+
+    /* Строка изделия (тип/кол-во/файл/удалить) — тоже фиксированной ширины
+       (56px + 190px + кнопка) и без переноса, обрезается на телефоне */
+    #aItemsWrap > div { flex-wrap: wrap; }
+    #aItemsWrap input[name="item-file"] { width: 100% !important; flex: 1 1 100%; }
   }
 
 </style>
