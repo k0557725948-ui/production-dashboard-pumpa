@@ -1175,7 +1175,7 @@
             <option>Элайнер</option><option>Капа</option><option>Модель</option><option>Форма (базис)</option><option>Накусок</option>
             <option>Модель (форма)</option>
             <option>Позиционер</option><option>Шаблон биосовместимый</option><option>Модель под обжатие</option>
-            <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+            <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option><option>Брекеты лингвальные</option>
           </select>
           <div class="f-sep"></div>
           <select id="fCat" onchange="applyFilters()">
@@ -1385,7 +1385,7 @@
               <option>Модель</option><option>Форма (базис)</option><option>Накусок</option><option>Модель под обжатие</option>
             </optgroup>
             <optgroup label="Металл">
-              <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+              <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option><option>Брекеты лингвальные</option>
             </optgroup>
           </select>
         </div>
@@ -1455,6 +1455,7 @@ const SP  = ['Подготовка к печати','Печать','Замывк
 const SB  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль'];
 const SM  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Беглый контроль'];
 const SMK = ['Подготовка к печати','Печать','Печать клипс','Пескоструйная обработка','Установка клипс','Пескоструйная обработка','Полировка','Беглый контроль'];
+const SL  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Изготовление дуг','Беглый контроль'];
 
 // Маршруты для СОСТАВНОГО заказа (несколько разных материалов в одном № заказа):
 // ...→ Беглый контроль → Укомплектовка → Готов к сборке (последний этап ЭТОГО подзаказа,
@@ -1463,6 +1464,7 @@ const SP_MULTI  = ['Подготовка к печати','Печать','Зам
 const SB_MULTI  = ['Подготовка к печати','Печать','Замывка','Сушка','Беглый контроль','Укомплектовка','Готов к сборке'];
 const SM_MULTI  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Беглый контроль','Укомплектовка','Готов к сборке'];
 const SMK_MULTI = ['Подготовка к печати','Печать','Печать клипс','Пескоструйная обработка','Установка клипс','Пескоструйная обработка','Полировка','Беглый контроль','Укомплектовка','Готов к сборке'];
+const SL_MULTI  = ['Подготовка к печати','Печать','Пескоструйная обработка','Полировка','Изготовление дуг','Беглый контроль','Укомплектовка','Готов к сборке'];
 
 // Финальная задача "Сборка заказа" (создаётся автоматически для составных заказов)
 const ASSEMBLY_ROUTE = ['Сборка', 'Передача в ОТК'];
@@ -1470,6 +1472,7 @@ const ASSEMBLY_ROUTE = ['Сборка', 'Передача в ОТК'];
 function baseStagesByType(type){
   if(type==='Брекеты вестибулярные') return SM;
   if(type==='Брекеты самолигирующие') return SMK;
+  if(type==='Брекеты лингвальные') return SL;
   if(['Аппарат','Аппарат (кольцо)'].includes(type)) return SM;
   if(['Позиционер','Шаблон биосовместимый'].includes(type)) return SB;
   return SP;
@@ -1477,6 +1480,7 @@ function baseStagesByType(type){
 function multiStagesByType(type){
   if(type==='Брекеты вестибулярные') return SM_MULTI;
   if(type==='Брекеты самолигирующие') return SMK_MULTI;
+  if(type==='Брекеты лингвальные') return SL_MULTI;
   if(['Аппарат','Аппарат (кольцо)'].includes(type)) return SM_MULTI;
   if(['Позиционер','Шаблон биосовместимый'].includes(type)) return SB_MULTI;
   return SP_MULTI;
@@ -1515,6 +1519,7 @@ const MAT_CFG = {
   'Аппарат (кольцо)':         {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Брекеты вестибулярные':    {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
   'Брекеты самолигирующие':   {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
+  'Брекеты лингвальные':      {matId:'metal',    ml:67,  unit:'г',  cat:'metal', gasPerPrint:14.3},
 };
 
 // Категории для маршрута
@@ -1522,7 +1527,7 @@ const CAT_MAP = {
   'Элайнер':'polymer','Модель (форма)':'polymer',
   'Капа':'polymer','Модель':'polymer','Форма (базис)':'polymer','Накусок':'polymer',
   'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat','Модель под обжатие':'biocompat',
-  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal','Брекеты лингвальные':'metal',
 };
 
 /* Цвета заданы через CSS-переменные палитры (а не хардкод hex), чтобы карточки
@@ -3487,7 +3492,7 @@ const MAT_CFG_CATS = {
   'Элайнер':'polymer','Модель (форма)':'polymer',
   'Капа':'polymer','Модель':'polymer','Форма (базис)':'polymer','Накусок':'polymer',
   'Позиционер':'biocompat','Шаблон биосовместимый':'biocompat','Модель под обжатие':'biocompat',
-  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal',
+  'Аппарат':'metal','Аппарат (кольцо)':'metal','Брекеты вестибулярные':'metal','Брекеты самолигирующие':'metal','Брекеты лингвальные':'metal',
 };
 
 const TYPE_SUFFIX = {
@@ -3512,7 +3517,7 @@ function addOrderItem(){
         <option>Модель</option><option>Форма (базис)</option><option>Накусок</option><option>Модель под обжатие</option>
       </optgroup>
       <optgroup label="Металл">
-        <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option>
+        <option>Аппарат</option><option>Аппарат (кольцо)</option><option>Брекеты вестибулярные</option><option>Брекеты самолигирующие</option><option>Брекеты лингвальные</option>
       </optgroup>
     </select>
     <input type="number" name="item-qty" value="1" min="1" max="99" style="width:56px;height:32px;padding:0 6px;border:1px solid #d3dae0;border-radius:4px;font-size:12px;font-family:inherit" placeholder="шт.">
