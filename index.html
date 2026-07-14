@@ -678,6 +678,7 @@
       <span class="tt-icon tt-sun">☀️</span>
       <span class="theme-toggle-label">Тёмная</span>
     </button>
+    <button class="bell-btn" onclick="location.reload()" title="Обновить страницу" aria-label="Обновить страницу">🔄</button>
     <button class="admin-logout" onclick="doLogout()">Выйти</button>
   </div>
 
@@ -932,7 +933,8 @@
     <span class="utc-date" id="utDate">—</span>
     <span class="utc-time" id="utTime">—:—:—</span>
   </div>
-  <div class="bell-wrap" id="bellWrap" style="display:none;margin-left:auto">
+  <button class="bell-btn" onclick="location.reload()" title="Обновить страницу" aria-label="Обновить страницу" style="margin-left:auto">🔄</button>
+  <div class="bell-wrap" id="bellWrap" style="display:none">
     <button class="bell-btn" id="bellBtn" onclick="toggleBell(event)" aria-label="Уведомления об уборке">
       <span class="bell-icon">🔔</span>
       <span class="bell-dot"></span>
@@ -2311,9 +2313,10 @@ function openDeleg(id){
   delegTargetId=id;
   const o=myWork.find(x=>x.id===id);if(!o)return;
   document.getElementById('delegOrderId').textContent=o.id;
-  // Список сотрудников — из актуального динамического USERS, исключая себя и администратора
+  // Список сотрудников — из актуального динамического USERS, исключая себя, администратора
+  // и тех, кто сейчас в отпуске (иначе можно случайно передать подзаказ недоступному человеку)
   const myName = currentUser ? currentUser.name : CURRENT_USER;
-  const candidates = Object.values(USERS).filter(u=>u.name!==myName && !u.isAdmin);
+  const candidates = Object.values(USERS).filter(u=>u.name!==myName && !u.isAdmin && !isOnVacation(u.name, new Date()));
   const queueOpt = `
     <button class="deleg-opt" onclick="confirmDelegToQueue()">
       <div class="deleg-av">📥</div>
@@ -3492,6 +3495,15 @@ function checkAutoAssembly(masterId){
   const allReady = subOrders.every(o=>!!o.finishedAt && o.finishedAsAssemblyReady);
   if(!allReady) return;
 
+  // assemblyCreated — только локальный флаг текущей вкладки, он не спасёт, если два
+  // сотрудника завершат последние подзаказы почти одновременно на разных устройствах.
+  // Подстраховываемся: если задача сборки для этого заказа уже реально существует
+  // (например, только что прилетела по realtime от другого клиента) — не создаём вторую.
+  if(allOrders.some(o=>o.masterId===masterId && o._isAssembly)){
+    assemblyCreated.add(masterId);
+    return;
+  }
+
   assemblyCreated.add(masterId);
   const ref = subOrders[0];
   const types = new Set(subOrders.map(o=>o.type));
@@ -3589,7 +3601,16 @@ async function adminPostOrderInner(){
   adminOrders.unshift(...created);
   // Вставляем все подзаказы заказа одним батчем напрямую в БД
   const { error } = await sb.from('orders').insert(created.map(orderToDbRow));
-  if(error){ alert('Ошибка размещения заказа: '+error.message); return; }
+  if(error){
+    // Вставка не прошла (например, коллизия № заказа или сбой сети) — откатываем
+    // оптимистично добавленные строки, иначе в списке останутся "заказы-призраки",
+    // которых на самом деле нет в базе, до следующей перезагрузки страницы
+    const createdIds = new Set(created.map(o=>o.id));
+    adminOrders = adminOrders.filter(o=>!createdIds.has(o.id));
+    renderAdminQueue();
+    alert('Ошибка размещения заказа: '+error.message);
+    return;
+  }
 
   // Очищаем форму
   document.getElementById('aId').value='';
